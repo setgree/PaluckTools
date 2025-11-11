@@ -73,6 +73,31 @@ This dataset has:
 - **Baseline covariate**: prior test scores, gender
 - **Outcomes**: test scores, attendance rate, attitude scale (1-5)
 
+### What your experimental data should look like
+
+For experimental analysis with `tidy_lm` and `robust_se`, your data should be in "long" format with one row per observation (student, participant, unit). Here's what you need:
+
+**Essential columns:**
+
+- **ID variables**: Unique identifier for each observation (e.g., `student_id`)
+- **Clustering variable**: If data are clustered (e.g., `school_id`, `site_id`, `pair_id`)
+- **Treatment variable**: Binary or factor variable indicating treatment assignment (e.g., `treatment`)
+- **Outcome variables**: Numeric variables you want to analyze (e.g., `test_score`, `attendance`, `attitudes`)
+
+**Recommended columns:**
+
+- **Baseline covariates**: Pre-treatment variables for precision (e.g., `baseline_score`, `gender`, `age`)
+- **Moderators**: Variables for subgroup analysis (e.g., `gender`, `school_type`)
+
+The `tidy_lm` function is designed to work with **tidy data** where:
+- Each row is an observation
+- Each column is a variable
+- Each cell contains a single value
+
+This is the standard format for data analysis in R. If your data are in wide format (e.g., separate columns for pretest and posttest), you'll need to reshape them using `tidyr::pivot_longer()` or similar tools.
+
+**A note on clustering**: If your experimental units are nested (students within schools, voters within precincts), you should account for this by specifying the `clusters` parameter in `tidy_lm` or using `robust_se` directly. This adjusts standard errors to account for within-cluster correlation and prevents false precision in your estimates.
+
 ## 1 Running multiple regressions with `tidy_lm`
 
 When analyzing experimental data, you often need to run many regression specifications: different dependent variables, different sets of controls, different subsamples. The `tidy_lm` function streamlines this process.
