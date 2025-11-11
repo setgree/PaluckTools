@@ -50,11 +50,12 @@ Before diving into effect size calculations, it helps to know what columns you'l
 
 ```{r preview_contact_data}
 library(PaluckTools)
+library(dplyr)
 data(contact_data)
 
 # View essential columns for effect size calculation
 contact_data |>
-  select(study, statistic, unstand, sd_c, n_t, n_c, d, var_d, se_d) |>
+  select(Study, statistic, unstand, sd_c, n_t, n_c, d, var_d, se_d) |>
   head(3)
 ```
 

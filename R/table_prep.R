@@ -78,7 +78,7 @@ add_bottom_row <- function(data, value = NA_real_){
 
 #' Nothing
 #'
-#' Does nothing. Useful as an anchor on the bottom row while editing using `%>%`.
+#' Does nothing. Useful as an anchor on the bottom row while editing using `|>`.
 #' @param data
 #'
 #' @return

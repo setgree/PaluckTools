@@ -37,10 +37,10 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
       x2 <- trimws(stringr::str_split(stringr::str_sub(vector[2], 3, -2), ",")[[1]])
     }
     x3 <-
-      x2 %>%
-      dplyr::as_tibble() %>%
-      mutate(value = ifelse(stringr::str_detect(x2, "\"") == TRUE, str_remove_all(value, "\""), value)) %>%
-      as_vector() %>%
+      x2 |>
+      dplyr::as_tibble() |>
+      mutate(value = ifelse(stringr::str_detect(x2, "\"") == TRUE, str_remove_all(value, "\""), value)) |>
+      pull(value) |>
       unname()
     x3
   }
@@ -48,19 +48,19 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
   ## Run through function if necessary
   ### dv
   test <- try(length(dv), silent = TRUE)
-  if (class(test) == "try-error"){
+  if (inherits(test, "try-error")){
     dv <- as.character(rlang::enquo(dv))
     dv <- quote_machine(dv)
   }
   ### terms
   test <- try(length(terms), silent = TRUE)
-  if (class(test) == "try-error"){
+  if (inherits(test, "try-error")){
     terms <- as.character(rlang::enquo(terms))
     terms <- quote_machine(terms)
   }
   ### treatment
   test <- try(length(treatment), silent = TRUE)
-  if (class(test) == "try-error"){
+  if (inherits(test, "try-error")){
     treatment <- as.character(rlang::enquo(treatment))
     treatment <- quote_machine(treatment)
   }
@@ -69,12 +69,12 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
 
   # Check Inputs
   ## Check Style
-  if (style == "incremental" | style == "bivariate" || style == "default" || style == "chord" || style == "weave") {
+  if (style == "incremental" || style == "bivariate" || style == "default" || style == "chord" || style == "weave") {
   } else {
     stop("Style must be 'incremental', 'bivariate', 'chord', 'weave', or 'default'")
   }
   ## Check multiple testing
-  if (multiple_testing == "FDR" | multiple_testing == "BH" || multiple_testing == "permutation" || is.null(multiple_testing)) { # check spelling
+  if (multiple_testing == "FDR" || multiple_testing == "BH" || multiple_testing == "permutation" || is.null(multiple_testing)) { # check spelling
   } else {
     stop("multiple_testing must be 'FDR', 'BH', 'permutation'")
   }
@@ -86,9 +86,9 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
     if (!dv[i] %in% colnames(data)){
       stop("'", dv[i], "'", " in the dv is not a variable in the dataset")
     }
-    if (sapply(data[,dv[i]], class) == "factor"){
+    if (inherits(data[[dv[i]]], "factor")){
       stop("'", dv[i], "'", " variable in the dv can't be type factor")
-    } else if (sapply(data[,dv[i]], class) == "list"){
+    } else if (inherits(data[[dv[i]]], "list")){
       stop("'", dv[i], "'", " variable in the dv can't be type list")
     }
   }
@@ -150,7 +150,7 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
   # lm function
   simple_model = FALSE # default is lm_robust
   lm_function <- function(){
-    data %>% do(y = estimatr::lm_robust(as.formula(paste(j, "~", i)),
+    data |> do(y = estimatr::lm_robust(as.formula(paste(j, "~", i)),
                                         data = data,
                                         alpha = alpha,
                                         clusters =  cluster_data,
@@ -160,7 +160,7 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
     simple_model = TRUE
     lm_function <- function(){
       model <- paste(j, "~", i)
-      data %>% do(y = lm(model, data = data))
+      data |> do(y = lm(model, data = data))
     }
   }
   # get df name
@@ -210,8 +210,9 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
   }
 
 
-  ## Create Empty Matrix
+  ## Create Empty Matrix with unique column names
   results <- matrix(0, t*length(dv), 3 + l)
+  colnames(results) <- c("model_number", "dv", paste0("var_", seq_len(l)), "lm")
 
   ## Fill Matrix
   ### Row 1 (model number)
@@ -381,13 +382,15 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
     }
   }
 
-  # Replace 0 with NA
-  results[results == "0"] <- NA_real_
+  # Replace 0 with NA in var columns (these are character columns)
+  var_cols <- grep("^var_", names(results), value = TRUE)
+  results <- results |>
+    dplyr::mutate(dplyr::across(dplyr::all_of(var_cols), ~dplyr::na_if(.x, "0")))
 
   ## include clusters column if clusters exist (necessary for star_ready)
   if (is.null(clusters) == FALSE) {
     try(results$clusters <- clusters, silent = TRUE)
-    results <- results %>% dplyr::select(1:(2 + l), clusters, lm)
+    results <- results |> dplyr::select(1:(2 + l), clusters, lm)
   }
 
   # Extract Treatment Info
@@ -401,9 +404,9 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
       has_backticks <- stringr::str_count(treatment[i], "`")
       treatment[i] <- stringr::str_remove_all(treatment[i], "`") # necessary for running applys
       # check for backticks factor
-      test <- try(lapply(data[,treatment[i]], class) == "factor", silent = T)
-      if (class(test) != "try-error"){
-        if (lapply(data[,treatment[i]], class) == "factor") { # if there are multiple representations e.g., factors logical, typeof(data[,treatment[i]])
+      test <- try(inherits(data[[treatment[i]]], "factor"), silent = TRUE)
+      if (!inherits(test, "try-error")){
+        if (inherits(data[[treatment[i]]], "factor")) { # if there are multiple representations e.g., factors logical, typeof(data[,treatment[i]])
           treatment_factors <- stringr::str_c(treatment[i], sapply(data[,treatment[i]], levels)[-1])
           treatment_factors <- treatment_factors[-length(treatment_factors)] # don't take last
           if(has_backticks > 0){ # put them back
@@ -412,7 +415,7 @@ tidy_lm <- function(data, dv, terms, treatment = NULL, style = "default", cluste
           treatment <- append(treatment, treatment_factors, after = i)
           treatment <- setdiff(treatment, treatment[i])
 
-        } else if (sapply(data[,treatment[i]], class)[1] == "logical"){  # check for backticks in logical
+        } else if (inherits(data[[treatment[i]]], "logical")){  # check for backticks in logical
           if(has_backticks > 0){
             treatment[i] <- stringr::str_c("`", treatment[i], "`")
           }

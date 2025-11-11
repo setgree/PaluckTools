@@ -228,7 +228,7 @@ clustered_models <- tidy_lm(
   dv = c("test_score", "attendance"),
   terms = c("treatment", "baseline_score", "gender"),
   treatment = "treatment",
-  clusters = school_id,
+  clusters = "school_id",
   style = "incremental"
 )
 

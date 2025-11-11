@@ -10,5 +10,5 @@ nothing(data)
 \item{data}{}
 }
 \description{
-Does nothing. Useful as an anchor on the bottom row while editing using \verb{\%>\%}.
+Does nothing. Useful as an anchor on the bottom row while editing using \verb{|>}.
 }

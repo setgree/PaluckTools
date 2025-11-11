@@ -16,8 +16,8 @@ star_ready <- function(tidy_lm_df, data){
   }
 
   ## shrink tidy df
-  tidy_lm_short <- tidy_lm_df %>%
-   # dplyr::select(1:"dv") %>%
+  tidy_lm_short <- tidy_lm_df |>
+   # dplyr::select(1:"dv") |>
     dplyr::select(dv, dplyr::starts_with("var_"))
 
   ## Create Empty Tibble
@@ -33,7 +33,7 @@ star_ready <- function(tidy_lm_df, data){
     terms <- tidy_lm_short[z,-c(1)] # take terms
     i <- paste(terms,collapse=" + ")
     i <- stringr::str_remove_all(i, " \\+ NA")
-    results[z,1] <- data %>% do(y = lm(paste(j, "~", i), data = data)) # redo model
+    results[z,1] <- data |> do(y = lm(paste(j, "~", i), data = data)) # redo model
     results$lm[[z]]$call[[2]][2] <- tidy_lm_df$dv[z] # fix dv
   }
   output <- results
@@ -48,7 +48,7 @@ star_ready <- function(tidy_lm_df, data){
       obj <- dplyr::tribble(~model, cluster_fun(results[z, "lm"][[1]][[1]], cluster = data[,tidy_lm_df$clusters[z]]))
       output[z, 1] <- obj
       #
-      # output[z, 1] <- data %>% do(y = list(model = obj,
+      # output[z, 1] <- data |> do(y = list(model = obj,
       #                                  call = results$lm[[z]]$call))
       #output[[z]] <- output$lm[z]
       #output$lm[[1]]$call[[2]][2] <- tidy_lm_df$dv[z] need to get dvs automatically
@@ -68,8 +68,8 @@ star_ready <- function(tidy_lm_df, data){
 join_tidy_lm <- function(model_a, model_b){
   model_a <- subset(model_a, select=c(model_number:lm))
   model_b <- subset(model_b,select=c(model_number:lm))
-  model_a_vars <- model_a %>% dplyr::select(starts_with("var_")) %>% length()
-  model_b_vars <- model_b %>% dplyr::select(starts_with("var_")) %>% length()
+  model_a_vars <- model_a |> dplyr::select(starts_with("var_")) |> length()
+  model_b_vars <- model_b |> dplyr::select(starts_with("var_")) |> length()
 
   if(model_a_vars != model_b_vars){
     if (model_a_vars > model_b_vars){
