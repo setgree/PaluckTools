@@ -1,41 +1,12 @@
----
-title: "Writing your meta-analytic paper"
-output:
-  rmarkdown::html_vignette:
-    fig_width: 7
-    fig_height: 7
-vignette: >
-  %\VignetteIndexEntry{3. Writing your meta-analytic paper}
-  %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  chunk_output_type: console
----
-
-Now that we've [conducted our meta-analyses](meta-analysis-vignette.html), it's time to write the paper. This vignette covers three topics that help with that: functions for summary statistics, a function that help you turn your database into a bibliography, and some ggplot2-based visualizations that we've found useful.
-
-Once again, we'll illustrate with data from two previous meta-analyses: `sv_data` from "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)" and `contact_data` from "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)."
-
-## 1 Summary statistics functions
-
-### 1.1 `summarise_lm`
-
-`summarise_lm` takes the built in R functions `summary(lm())` and lets you use them in a sequence of pipes. In particular this is useful when you want to test for the magnitude of a relationship between two variables in many different subsets of data at once.
-
-```{r summarise_lm demonstration}
+## ----summarise_lm demonstration-----------------------------------------------
 library(PaluckMetaSOP)
 sv_data |> summarise_lm()
 
 # now in different subsets
 library(purrr)
 sv_data |> split(~study_design) |> map(summarise_lm)
-```
 
-### 1.2 `summarise_table`
-
-`summarise_table`, like `summarise_lm`, takes a built in function (`table`) and turns it into something that can be integrated into a sequence of pipes. Again, this is useful for when you want to see many tables at once, or put a few tables into a bigger table.
-
-```{r summarise_table_demonstration}
+## ----summarise_table_demonstration--------------------------------------------
 library(dplyr)
 # let's say you want to see the table of `behavior_type` in `sv_data
 # you can do
@@ -51,73 +22,50 @@ map(~ summarise_table(., behavior_type)) |> bind_rows(.id = "study_design")
 # Note: summarise_table() returns a table object. For more complex manipulations,
 # you can convert to a data frame:
 # as.data.frame(summarise_table(sv_data, behavior_type))
-```
 
-### 1.3 `study_count`
-
-This simple function counts how many studies are in a dataset or in different subsets of your data. It assumes your dataset has a variable called `unique_study_id`.
-
-```{r study_count_demonstration}
+## ----study_count_demonstration------------------------------------------------
 sv_data |> study_count()
 sv_data |> split(~study_design) |> map(study_count) |> 
   bind_rows(.id = "study_design")
-```
 
-### 2 Turning a database of studies into a bibliography file
+## ----bib_stuff, eval=FALSE----------------------------------------------------
+# library(dplyr)
+# 
+# # Load the MAP reduction dataset
+# data(map_reduction_data)
+# 
+# # Preview the data structure
+# map_reduction_data |>
+#   select(author, year, title, doi) |>
+#   head(5)
+# 
+# # Filter for entries with valid DOIs (start with "10.")
+# map_with_dois <- map_reduction_data |>
+#   filter(grepl("^10\\.", doi)) |>
+#   distinct(doi, .keep_all = TRUE)
+# 
+# cat("Found", nrow(map_with_dois), "unique DOIs\n")
+# 
+# # Generate bibliography
+# make_bib(
+#   data = map_with_dois,
+#   doi_column = "doi",
+#   bib_file = "./references.bib",
+#   verbose = TRUE
+# )
+# 
+# # The function will:
+# # 1. Extract unique DOIs from the specified column
+# # 2. Fetch bibliographic information from DOI.org
+# # 3. Write each entry to the .bib file
+# # 4. Print progress messages
+# 
+# # You can also manually add individual DOIs:
+# # Create a simple data frame with a DOI
+# extra_doi <- data.frame(doi = "10.1016/j.appet.2025.108233")
+# make_bib(extra_doi, bib_file = "./references.bib", overwrite = FALSE)
 
-The `make_bib()` function takes a data frame containing DOI information and creates a BibTeX (.bib) file. This is a wrapper around `RefManageR::WriteBib()` that fetches bibliographic information for each DOI and writes it to a .bib file suitable for use with LaTeX.
-
-The `map_reduction_data` dataset, from a meta-analysis of interventions to reduce consumption of meat and animal products (Green et al., 2025), includes DOI information and serves as a demonstration for this function.
-
-**Note:** We'll set `eval = FALSE` so this doesn't continually re-run when the vignette builds, since it requires API calls to DOI.org.
-
-```{r bib_stuff, eval=FALSE}
-library(dplyr)
-
-# Load the MAP reduction dataset
-data(map_reduction_data)
-
-# Preview the data structure
-map_reduction_data |>
-  select(author, year, title, doi) |>
-  head(5)
-
-# Filter for entries with valid DOIs (start with "10.")
-map_with_dois <- map_reduction_data |>
-  filter(grepl("^10\\.", doi)) |>
-  distinct(doi, .keep_all = TRUE)
-
-cat("Found", nrow(map_with_dois), "unique DOIs\n")
-
-# Generate bibliography
-make_bib(
-  data = map_with_dois,
-  doi_column = "doi",
-  bib_file = "./references.bib",
-  verbose = TRUE
-)
-
-# The function will:
-# 1. Extract unique DOIs from the specified column
-# 2. Fetch bibliographic information from DOI.org
-# 3. Write each entry to the .bib file
-# 4. Print progress messages
-
-# You can also manually add individual DOIs:
-# Create a simple data frame with a DOI
-extra_doi <- data.frame(doi = "10.1016/j.appet.2025.108233")
-make_bib(extra_doi, bib_file = "./references.bib", overwrite = FALSE)
-```
-
-The resulting .bib file can be used directly in your LaTeX document with `\bibliography{references}`.
-
-## 3 Visualizations
-
-### 3.1 Forest plot
-
-Forest plots are a staple of meta-analyses. Many R packages have functions to create them, e.g. `metafor::forest`. However, our meta-analytic figures typically add color coding to denote additional information about (e.g.) study design, theoretical category, or outcome type. There was no easy way to do that with existing functions, so here's one approach to doing that in ggplot2 (and some supplementary plotting libraries as well).
-
-```{r Forest plot}
+## ----Forest plot--------------------------------------------------------------
 library(ggplot2)
 library(ggtext)
 model <- contact_data |> map_robust()
@@ -166,17 +114,8 @@ plot_dat |> ggplot(aes(x = d, y = name_short)) +
   theme(plot.title = element_text(hjust = 0.5,
                                   face = "bold"),
         axis.line = element_line(colour = "black")) 
-```
 
-We didn't actually use this code in "The Contact Hypothesis Re-evaluated", but we probably would have if we were writing that paper now.
-
-### 3.2 Relationship between Standard Error and D
-
-A standard check for publication bias is to see if effect size is positively correlated with the size of the standard error. The idea is that in the presence of publication bias, smaller studies are more likely to get shelved if they produce null results, whereas large, well-powered studies are more likely to get published no matter what. In that case, you'd expect for small studies to be an inaccurate estimate of the true population effect size, and for larger studies to produce systematically smaller estimates.
-
-Here's a slightly simplified version of figure 1 from "The Contact Hypothesis Re-Evaluated:"
-
-```{r se_d_plot, warning=FALSE, message=FALSE}
+## ----se_d_plot, warning=FALSE, message=FALSE----------------------------------
 library(ggrepel)
 shape_orders <- c(19, 17, 15, 18)
 target_labels <- c("Age", "Disability", "Foreigners", "Gender", 
@@ -201,13 +140,8 @@ target_labels <- c("Age", "Disability", "Foreigners", "Gender",
   labs(color = "Target of prejudice") +
   theme_bw()
 
-```
 
-### 3.3 Descriptive figures
-
-This code produces figures that display descriptive characteristics of `sv_data` for "Preventing Sexual Violence. As you can see, this required a lot of custom code to account for particular things about how we put the dataset together, so it won't perfectly generalize to a new project; but we think the overall ideas are worth preserving and communicating. (The following was all written by John-Henry Pezzuto.)
-
-```{r sv_data_descriptive_figs, warning=FALSE, message=FALSE, fig.show='hold'}
+## ----sv_data_descriptive_figs, warning=FALSE, message=FALSE, fig.show='hold'----
 library(forcats)
 library(ggplot2)
 library(ggtext)
@@ -304,13 +238,8 @@ tt_gender_fig = dat_participant_sex |>
 
 # The patchwork library enables this arrangement:
 country_fig / setting_fig / tt_gender_fig 
-```
 
-### 3.4 correlation between ideas-based and behavioral outcomes
-
-For "Preventing Sexual Violence," we wanted to check whether changes in ideas were linked to changes in behavior. We first created a subset of our dataset with just studies that measured both categories, and then made a scatterplot that plotted changes in one dimension against changes in the other. The black line represents what a 1-to-1 correlation between the two outcomes would have looked like, and the gray line is what we actually observed.
-
-```{r attitude_behavioral_scatterplot}
+## ----attitude_behavioral_scatterplot------------------------------------------
 
 sv_data |> filter(has_both == 'both') |>
   group_by(author, year, study_design, unique_study_id, scale_type) |>
@@ -344,51 +273,20 @@ sv_data |> filter(has_both == 'both') |>
         legend.title = element_text(size = 14),
         legend.position = "bottom",
         legend.box = "vertical")
-```
 
-## 4 Creating a reproducible research environment
+## ----dockerfile, eval=FALSE---------------------------------------------------
+# # After loading all packages you used in your analysis, run:
+# library(PaluckTools)
+# library(dplyr)
+# library(ggplot2)
+# # ... other packages you used
+# 
+# # Create a Dockerfile with all currently loaded packages
+# write_dockerfile()
+# 
+# # Or include ALL installed packages (not just loaded ones)
+# write_dockerfile(all_packages = TRUE)
+# 
+# # Preview the Dockerfile content without writing to file
+# write_dockerfile(write_file = FALSE)
 
-### 4.1 `write_dockerfile`
-
-Once you've completed your analysis, you can use `write_dockerfile` to create a Docker container that captures your exact R environment. This ensures your analysis can be reproduced years later, even as R and package versions change.
-
-The function converts the output from `sessionInfo()` into a Dockerfile that specifies:
-- Your R version
-- All loaded packages and their versions
-- System dependencies
-
-```{r dockerfile, eval=FALSE}
-# After loading all packages you used in your analysis, run:
-library(PaluckTools)
-library(dplyr)
-library(ggplot2)
-# ... other packages you used
-
-# Create a Dockerfile with all currently loaded packages
-write_dockerfile()
-
-# Or include ALL installed packages (not just loaded ones)
-write_dockerfile(all_packages = TRUE)
-
-# Preview the Dockerfile content without writing to file
-write_dockerfile(write_file = FALSE)
-```
-
-This creates a file called `Dockerfile` in your current directory. You can then:
-
-1. **Use it locally** with Docker to recreate your environment
-2. **Share it with collaborators** so they can reproduce your exact setup
-3. **Upload it to services like [mybinder.org](https://mybinder.org/)** to create an interactive online version of your analysis
-
-For more on using Dockerfiles with R, see the [Rocker Project](https://www.rocker-project.org/) ([Boettiger & Eddelbuettel, 2017](https://arxiv.org/abs/1710.03675)).
-
-### 4.2 Why reproducibility matters
-
-Meta-analyses aggregate results from dozens or hundreds of studies. The calculations can be complex, with many judgment calls about inclusion criteria, effect size conversions, and subgroup analyses. Creating a reproducible environment ensures that:
-
-- Reviewers can verify your analysis
-- Future researchers can extend your work
-- You can revisit your analysis years later and understand exactly what you did
-- Your work contributes to open science practices
-
-The `write_dockerfile` function makes this process straightforward by automatically capturing all the dependencies your analysis needs.

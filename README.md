@@ -39,11 +39,10 @@ This package contains:
 - **Functions** for meta-analysis and experimental analysis
 - **Vignettes** that walk through different workflows
 - **Datasets**:
-  - `sv_data` - Sexual violence prevention meta-analysis (Paluck Lab)
-  - `contact_data` - Contact hypothesis meta-analysis (Paluck Lab)
+  - `sv_data` - Sexual violence prevention meta-analysis
+  - `contact_data` - Contact hypothesis meta-analysis
   - `map_reduction_data` - Meat/animal product reduction meta-analysis
-    (included for demonstrating the `make_bib()` function; lead author
-    Seth Green is a Paluck Lab affiliate)
+    (Green et al., 2025)
 
 ## Getting started
 
