@@ -14,36 +14,56 @@ knitr::opts_chunk$set(
 )
 ```
 
-## 1 Meta-analysis is (more or less) a six step process.
+## 1 What is PaluckTools?
 
-Meta-analysis is a systematic way to combine findings from multiple studies to estimate an overall effect. Here are the main steps:
+PaluckTools provides functions and workflows for two main types of research in social psychology:
 
-1)  Identify a causal question where combining results from many papers will be informative.[^1]
+1. **Meta-analysis**: Systematically combining results from multiple studies
+2. **Experimental analysis**: Analyzing data from your own experiments
 
-2)  Decide which papers shed light on that question.[^2]
+This overview will help you navigate to the right vignettes for your needs.
 
-3)  Gather and read all such papers (i.e., conduct a systematic search).
+## 2 Meta-analysis workflow (Vignettes 1-3)
 
-4)  Condense each study's results to a single point estimate, or a cluster of point estimates, and associated variance(s).
+Meta-analysis is a systematic way to combine findings from multiple studies to estimate an overall effect. It follows these steps:
 
-5)  Aggregate those estimates into a pooled average effect and any relevant subgroup effects.
+1. Identify a causal question where combining results from many papers will be informative[^1]
+2. Decide which papers shed light on that question[^2]
+3. Gather and read all such papers (i.e., conduct a systematic search)
+4. **Condense each study's results to a single point estimate (or cluster of estimates) and associated variance(s)**
+5. **Aggregate those estimates into a pooled average effect and any relevant subgroup effects**
+6. **Write up your results**
 
-6)  Write up your results.
+[^1]: For instance, you might want to assess the conditions (scope conditions) under which an effect can be expected; identify cross-study moderators that predict population- or setting-level effects; or compare multiple theoretical approaches. The alternative to a meta-analysis for assessing the relationship between X and Y is to run a new experiment. But a meta-analysis can help figure out what that experiment should look like by illuminating gaps in the literature.
 
-[^1]: For instance, you might want to assess the conditions (scope conditions) under which an effect can be expected; identify cross-study moderators that predict population- or setting-level effects that can strengthen or weaken effects; or compare multiple theoretical approaches to see which works best. The alternative to a meta-analysis for assessing the relationship between X and Y is to run a new experiment. But a meta-analysis can be very helpful in figuring out what that experiment should look like by illuminating gaps in the literature.
+[^2]: In practice this means operationalizing X and Y, which might not be straightforward: does imagined contact count as contact? What exactly is prejudice, and how do we measure it? It also means setting inclusion criteria related to internal validity, measurement error, or population. For instance, your meta-analysis might focus only on [policy-relevant randomized controlled trials](https://www.cambridge.org/core/journals/behavioural-public-policy/article/contact-hypothesis-reevaluated/142C913E7FA9E121277B29E994124EC5), a [particular class of dependent variable](https://osf.io/a7g95/), or the effects of [sexual violence prevention programs on college campuses](https://www.jahonline.org/article/S1054-139X(23)00117-9/abstract).
 
-[^2]: In practice this means operationalizing X and Y, which might not be straightforward: does imagined contact count as contact? What exactly is prejudice, and how do we measure it? It also means setting inclusion criteria related to, e.g., internal validity, measurement error, or population. For instance, your meta-analysis might be focused only on the results of [policy-relevant randomized controlled trials](https://www.cambridge.org/core/journals/behavioural-public-policy/article/contact-hypothesis-reevaluated/142C913E7FA9E121277B29E994124EC5), a [particular class of dependent variable](https://osf.io/a7g95/), or the effects of [sexual violence prevention programs on college campuses](https://www.jahonline.org/article/S1054-139X(23)00117-9/abstract).
+### Vignettes for meta-analysis:
 
-## 2 These vignettes focus on steps 4-6 (the data analysis portion).
+Steps 1-3 involve literature review and study selection, covered in other resources. **The meta-analysis vignettes focus on steps 4-6** (the statistical analysis and writing stages):
 
-Steps 1-3 involve literature review and study selection, which are covered extensively in other meta-analysis resources. These vignettes focus on the statistical analysis and writing stages.
+- **[Vignette 1: Calculating effect sizes](d-calc-vignette.html)** - How to convert study results into standardized effect sizes and variances using `d_calc`, `var_d_calc`, and helper functions
 
-The [first vignette](d-calc-vignette.html) is about **step 4**: calculating effect sizes and variance. It covers "easy" cases where you can use `d_calc` and `var_d_calc` without too much extra work, then walks through a few edge cases we've encountered over time. Finally, it demonstrates how to incorporate these functions into your analysis scripts in a reproducible way.
+- **[Vignette 2: Running meta-analyses](meta-analysis-vignette.html)** - How to aggregate effect sizes across studies using `map_robust`
 
-The [second vignette](meta-analysis-vignette.html) is about **step 5**, how to actually do meta-analysis. It covers using `map_robust` to combine your point estimates and variances into pooled estimates for the population and any subgroups you want to analyze.
+- **[Vignette 3: Writing your paper](writing-metas-vignette.html)** - Helper functions for creating tables, figures, bibliographies, and reproducible research environments
 
-The [third vignette](writing-metas-vignette.html) is about **step 6**, and walks through the other functions we've written to help write a meta-analysis paper. Specifically, it covers `sum_lm`, `sum_tab`, and `study_count`, as well as a few smaller functions for turning a meta-analytic database into a bibliography and creating ggplot2-based visualizations.
+## 3 Experimental analysis workflow (Vignette 4)
 
-## 3 Next up
+If you're analyzing data from your own experiments (not conducting a meta-analysis), you'll want different tools:
 
-[Converting a study's results into SMD, variance, and standard error](d-calc-vignette.html).
+- **[Vignette 4: Experimental analysis and tables](experimental-analysis-vignette.html)** - Covers `tidy_lm` for running multiple regression specifications, `robust_se` for cluster-robust standard errors, and table formatting utilities for creating publication-ready LaTeX tables
+
+This vignette demonstrates how to:
+- Run many regression models efficiently
+- Handle clustered standard errors
+- Prepare output for stargazer tables
+- Format tables for publication
+
+## 4 Getting started
+
+**Conducting a meta-analysis?** → Start with [Vignette 1: Calculating effect sizes](d-calc-vignette.html)
+
+**Analyzing experimental data?** → Jump to [Vignette 4: Experimental analysis](experimental-analysis-vignette.html)
+
+**Not sure?** → Meta-analysis combines results from *other people's studies*. Experimental analysis works with *your own data*. If you're still unsure, start with Vignette 1 to get a sense of what meta-analysis involves.

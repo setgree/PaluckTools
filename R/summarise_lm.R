@@ -1,6 +1,6 @@
 #' Print Core Results from summary(lm()) in a Neat Table
 #'
-#' `sum_lm` takes the built in R functions `summary(lm())`
+#' `summarise_lm` takes the built in R functions `summary(lm())`
 #' and lets you use them in a sequence of pipes.
 #' In particular this is useful when you want to test for
 #' the magnitude of a relationship between two variables in
@@ -16,19 +16,19 @@
 #' @note The function defaults to using `d` as the response variable and `se_d` as the predictor
 #' if these columns exist in the dataset. You can override these by specifying `y` and `x` parameters.
 #' @family summary functions
-#' @seealso \code{\link{sum_tab}} for frequency tables, \code{\link{study_count}} for counting studies
+#' @seealso \code{\link{summarise_table}} for frequency tables, \code{\link{study_count}} for counting studies
 #' @export
 #'
 #' @examples
 #' # example 1: entire dataset
-#' PaluckMetaSOP::contact_data |> sum_lm()
+#' PaluckTools::contact_data |> summarise_lm()
 #' # example 2: split and apply to many subsets
 #' \dontrun{
 #' library(purrr)
-#' PaluckMetaSOP::sv_data |> split(~study_design) |> map(sum_lm)
+#' PaluckTools::sv_data |> split(~study_design) |> map(summarise_lm)
 #'}
 
-sum_lm <- function(dataset, y = NULL, x = NULL, coefs_only = TRUE, dgts = 5) {
+summarise_lm <- function(dataset, y = NULL, x = NULL, coefs_only = TRUE, dgts = 5) {
   if (missing(dataset)) {
     stop("dataset argument is missing.")
   }

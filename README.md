@@ -1,0 +1,109 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# PaluckTools
+
+<!-- badges: start -->
+
+<!-- badges: end -->
+
+PaluckTools documents the [Paluck
+lab’s](http://www.betsylevypaluck.com/) approach to conducting
+meta-analyses and analyzing experimental data.
+
+This package integrates functions from three sources: \* PaluckMetaSOP -
+meta-analysis functions featured in “[The Contact Hypothesis
+Re-evaluated](https://doi.org/10.1017/bpp.2018.25)” and “[Preventing
+Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed
+Solution](https://doi.org/10.1177/15291006231221978)” \* blpl -
+John-Henry Pezzuto’s experimental analysis and table formatting tools \*
+Additional helper functions for effect size conversion and data
+preparation
+
+## Installation
+
+Run the following R command:
+
+``` r
+remotes::install_github('setgree/PaluckTools', build_vignettes = TRUE)
+```
+
+## What you’ll find
+
+This package contains:
+
+- **Functions** for meta-analysis and experimental analysis
+- **Vignettes** that walk through different workflows
+- **Datasets** (`sv_data` and `contact_data`) from published
+  meta-analyses
+
+## Getting started
+
+After installation, run:
+
+``` r
+browseVignettes(package = "PaluckTools")
+```
+
+We recommend starting with the overview vignette, which will guide you
+to the right workflow for your needs.
+
+## The functions
+
+### Meta-analysis workflow
+
+#### Effect size calculation:
+
+- `d_calc`: Calculate standardized mean differences (Cohen’s D/Glass’s
+  ∆)
+- `var_d_calc`: Calculate variance of effect sizes
+- `ci_2_sd`, `se_2_sd`, `sd_pooled`, `did_calculator`: Helper functions
+  for data preparation
+
+#### Running meta-analyses:
+
+- `map_robust`: Tidyverse-friendly wrapper around `metafor::robust()`
+  for robust variance estimation
+
+#### Writing and visualization:
+
+- `study_count`: Count unique studies in grouped data
+- `summarise_lm`: Pipe-friendly wrapper for `summary(lm())`
+- `summarise_table`: Pipe-friendly version of `table()`
+- `make_bib`: Generate bibliography from DOIs
+- `write_dockerfile`: Create reproducible research environments
+
+### Experimental analysis workflow
+
+#### Regression analysis:
+
+- `tidy_lm`: Comprehensive function for running multiple regression
+  specifications
+- `robust_se`: Calculate cluster-robust standard errors
+
+#### Table formatting:
+
+- `star_ready`: Prepare tidy_lm output for stargazer tables
+- `table_prep` functions: 14 utilities for LaTeX table formatting
+  (add_parentheses, add_endnote, stargazer_pvalues, print_table, etc.)
+
+For more documentation, see the vignettes or add a `?` before any
+function (e.g., `?PaluckTools::tidy_lm`).
+
+## For Paluck Lab members
+
+To contribute:
+
+1.  Clone this package:
+
+    ``` bash
+    git clone https://github.com/setgree/PaluckTools.git
+    ```
+
+2.  Add or amend functions and vignettes
+
+3.  Open a [pull
+    request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
+
+The first few chapters of [*R packages*](https://r-pkgs.org/) provide
+excellent guidance on package development.
