@@ -1,6 +1,4 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # PaluckTools
 
 <!-- badges: start -->
@@ -15,18 +13,22 @@ This package integrates functions from three sources:
 
 - [PaluckMetaSOP](https://github.com/setgree/PaluckMetaSOP) -
   meta-analysis functions featured in “[The Contact Hypothesis
-  Re-evaluated](https://doi.org/10.1017/bpp.2018.25)” and “[Preventing
+  Re-evaluated](https://doi.org/10.1017/bpp.2018.25),” “[Preventing
   Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed
-  Solution](https://doi.org/10.1177/15291006231221978)”
+  Solution](https://doi.org/10.1177/15291006231221978),” 
+  and "[Meaningfully reducing consumption
+  of meat and animal products is an unsolved problem: 
+  A meta-analysis](https://doi.org/10.1016/j.appet.2025.108233)" 
+  (a meta-analysis that I (Seth Green) co-authored using methods I
+  learned at the Paluck Lab.)
 - [blpl](https://github.com/johnhenrypezzuto/blpl) - John-Henry
   Pezzuto’s experimental analysis and table formatting tools
 - [prejudice-reduction-code-and-data](https://github.com/setgree/prejudice-reduction-code-and-data) -
   additional helper functions for effect size conversion and data
-  preparation
+  preparation used to generate the results of "[Prejudice Reduction:
+  Progress and Challenges](https://doi.org/10.1146/annurev-psych-071620-030619)" 
 
 ## Installation
-
-Run the following R command:
 
 ``` r
 remotes::install_github('setgree/PaluckTools', build_vignettes = TRUE)
@@ -37,7 +39,7 @@ remotes::install_github('setgree/PaluckTools', build_vignettes = TRUE)
 This package contains:
 
 - **Functions** for meta-analysis and experimental analysis
-- **Vignettes** that walk through different workflows
+- **Vignettes** that walk through different workflows, focusing on meta-analysis
 - **Datasets**:
   - `sv_data` - Sexual violence prevention meta-analysis
   - `contact_data` - Contact hypothesis meta-analysis
