@@ -19,15 +19,25 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette demonstrates tools for analyzing experimental data and creating publication-ready tables. While the previous vignettes focused on meta-analysis, this one covers the experimental analysis workflow.
+## 1 Introduction
 
-We'll cover:
+This vignette demonstrates tools for analyzing experimental data and creating publication-ready tables. While the previous vignettes focused on meta-analysis, this one covers the experimental analysis workflow using functions designed to streamline common tasks in social psychology research.
 
-1. `tidy_lm` for running multiple regression specifications efficiently
-2. `robust_se` for cluster-robust standard errors
-3. Table formatting utilities for LaTeX output
+When you analyze experimental data, you often need to:
 
-## Example data: Growth mindset intervention
+- Run many regression specifications (different dependent variables, different sets of controls, different subsamples)
+- Account for clustering in your standard errors (students within schools, voters within precincts)
+- Create publication-ready tables with proper formatting
+
+PaluckTools provides three main categories of functions to help with these tasks:
+
+1. **`tidy_lm`** for running multiple regression specifications efficiently
+2. **`robust_se`** for cluster-robust standard errors
+3. **Table formatting utilities** for creating publication-ready LaTeX tables
+
+This vignette walks through each of these tools using realistic simulated data from a growth mindset intervention study.
+
+## 2 Example data: Growth mindset intervention
 
 For realistic examples, we'll create a simulated dataset from a typical social psychology experiment. Imagine a study testing whether a growth mindset intervention improves student outcomes across 20 schools (100 students per school).
 
@@ -98,11 +108,11 @@ This is the standard format for data analysis in R. If your data are in wide for
 
 **A note on clustering**: If your experimental units are nested (students within schools, voters within precincts), you should account for this by specifying the `clusters` parameter in `tidy_lm` or using `robust_se` directly. This adjusts standard errors to account for within-cluster correlation and prevents false precision in your estimates.
 
-## 1 Running multiple regressions with `tidy_lm`
+## 3 Running multiple regressions with `tidy_lm`
 
-When analyzing experimental data, you often need to run many regression specifications: different dependent variables, different sets of controls, different subsamples. The `tidy_lm` function streamlines this process.
+When analyzing experimental data, you often need to run many regression specifications: different dependent variables, different sets of controls, different subsamples. The `tidy_lm` function streamlines this process by allowing you to specify multiple models at once and returning the results in a tidy data frame format.
 
-### 1.1 Basic usage
+### 3.1 Basic usage
 
 Test whether the treatment affects test scores:
 
@@ -121,7 +131,7 @@ results |> select(dv, treatmentTreatment_coef, treatmentTreatment_p)
 
 The output is a tidy data frame where each row represents one regression model. The `treatment` parameter extracts coefficients automatically.
 
-### 1.2 Multiple dependent variables
+### 3.2 Multiple dependent variables
 
 Test treatment effects across all outcomes simultaneously:
 
@@ -138,7 +148,7 @@ multi_outcome <- tidy_lm(
 multi_outcome |> select(dv, treatmentTreatment_coef, treatmentTreatment_p)
 ```
 
-### 1.3 Different regression styles
+### 3.3 Different regression styles
 
 Control for baseline covariates in different ways:
 
@@ -174,7 +184,7 @@ cat("Incremental:", nrow(incremental), "models (adds controls one at a time)\n")
 cat("Default:", nrow(full_model), "model (all controls together)\n")
 ```
 
-### 1.4 Real-world workflow: Multiple outcomes with controls
+### 3.4 Real-world workflow: Multiple outcomes with controls
 
 A typical analysis tests treatment effects on multiple outcomes, with and without controls:
 
@@ -195,11 +205,11 @@ full_analysis |>
   mutate(significant = treatmentTreatment_p < 0.05)
 ```
 
-## 2 Cluster-robust standard errors
+## 4 Cluster-robust standard errors
 
-Our students are clustered within schools, so we need cluster-robust standard errors to account for within-school correlation.
+Our students are clustered within schools, so we need cluster-robust standard errors to account for within-school correlation. Why does this matter? When observations are clustered (students within schools, voters within precincts), the usual assumption that observations are independent is violated. Students in the same school might be more similar to each other than to students in other schools, which means the standard errors from ordinary regression will be too small, leading to overconfident conclusions.
 
-### 2.1 Using `robust_se`
+### 4.1 Using `robust_se`
 
 ```{r robust_se}
 # Basic regression (ignores clustering)
@@ -217,7 +227,7 @@ robust_results[[2]]
 
 Notice the standard errors are typically larger than classical SEs, reflecting within-cluster correlation.
 
-### 2.2 Incorporating clusters into `tidy_lm`
+### 4.2 Incorporating clusters into `tidy_lm`
 
 For multiple specifications with clustering, use `tidy_lm` directly:
 
@@ -237,9 +247,9 @@ clustered_models |>
   select(dv, model_number, treatmentTreatment_coef, treatmentTreatment_se, treatmentTreatment_p)
 ```
 
-## 3 Preparing tables for publication
+## 5 Preparing tables for publication
 
-### 3.1 Using `star_ready` with stargazer
+### 5.1 Using `star_ready` with stargazer
 
 The `star_ready` function prepares `tidy_lm` output for use with the `stargazer` package:
 
@@ -260,7 +270,7 @@ ready_for_table <- star_ready(models, data = experiment_data)
 # stargazer(ready_for_table, type = "latex")
 ```
 
-### 3.2 Table formatting utilities
+### 5.2 Table formatting utilities
 
 The package includes 14 utility functions for formatting LaTeX tables. These functions work with LaTeX output captured via `capture.output()` from packages like `stargazer` or `knitr::kable()`.
 
@@ -325,7 +335,7 @@ print_table(table_with_brackets)
 - `add_endnote()`: Replace stargazer's default notes with custom footnotes
 - `stargazer_rowname()`: Customize row names in stargazer tables
 
-### 3.3 Typical workflow for publication-ready tables
+### 5.3 Typical workflow for publication-ready tables
 
 Most users will need only a few of these functions. A typical workflow:
 
@@ -337,7 +347,7 @@ Most users will need only a few of these functions. A typical workflow:
 
 For complete documentation of all formatting functions, see `?table_prep`.
 
-## 4 Putting it all together
+## 6 Putting it all together
 
 Here's a complete workflow from analysis to publication-ready table:
 
@@ -380,7 +390,7 @@ formatted_table <- raw_table |>
 print_table(formatted_table)
 ```
 
-## 5 Key takeaways
+## 7 Key takeaways
 
 **For running regressions:**
 - Use `tidy_lm` when you need to run many specifications
