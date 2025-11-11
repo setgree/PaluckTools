@@ -1,0 +1,155 @@
+---
+title: "Performing meta-analysis the Paluck Lab way"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{2. Performing meta-analysis the Paluck Lab way}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options:
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Now that we [have our vectors of ∆, variance, and standard errors for each paper](d-calc-vignette.html), it's time to perform a meta-analysis, i.e. the statistical procedure by which the results of many studies are pooled. 
+
+The main function in this vignette is called `map_robust`. We'll demonstrate how to use it with our built-in datasets, primarily `sv_data`. This is the dataset for "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)". (We'll also use `contact_data` from "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)" for a few examples.)
+
+## 1 The easy case: combining all estimates into a single pooled effect size
+
+`map_robust` is a wrapper around a pre-existing function from the `metafor` package called `robust`, which is itself a wrapped around the function `rma`. See the `man` pages for those functions for full details.
+
+`map_robust` takes a dataset and returns a data frame with an N of the number of data points; an N for the number of studies; a ∆ signifying the pooled effect size; a standard error; and a p value.
+
+```{r single_pooled_eff_size}
+library(PaluckMetaSOP)
+sv_data |> map_robust()
+```
+
+This is equivalent to running the following:
+```{r robust_rma}
+library(metafor)
+robust(x = metafor::rma(yi = sv_data$d, vi = sv_data$var_d), 
+       cluster = sv_data$unique_study_id)
+```
+
+Our function is different in a few respects. First, it's designed to take in a dataset via a piped operation (`|>`), which was actually the main reason we wrote it in the first place (we were in the habit of using a lot of pipes). Second, so long as your dataset contains variables called `d`, `var_d`, and `unique_study_id`, it's a lot easier to type. Third, it returns a truncated output that corresponds to the information we were actually recording in our results sections.
+
+### 1.1 A note about clustering
+
+Clustering accounts for the fact that multiple effect sizes from the same study are not independent—they share the same participants, setting, and research team. By clustering at the study level, we get more accurate standard errors that account for this dependence.
+
+Our meta-analyses cluster at the level of study. You could also cluster at the level of a paper, or of a team of authors, or at no level at all. If you run our function on a dataset where each unique_study_id corresponds to only one row in the dataset, it's equivalent to not clustering. We'll demonstrate that with `PaluckMetaSOP::contact_data`:
+
+```{r contact_data_demonstration}
+library(dplyr)
+contact_data |> select(-unique_study_id) |> # remove unique study id to reconstruct it
+  group_by(name_short) |> mutate(unique_study_id = cur_group_id()) |>
+  map_robust()
+#' note: this Delta is a little different than the one we report in TCHR
+#' we used Stata at the time to calculate the pooled average effect size
+#' (and probably a few other small differences)
+
+# now robust analysis
+robust(x = metafor::rma(yi = contact_data$d, vi = contact_data$var_d), 
+       cluster = contact_data$unique_study_id)
+
+# same as if we drop the clustering information
+rma(yi = d, vi = var_d, data = contact_data)
+```
+
+If you want to cluster at a different level, or call your cluster variable something different and modify the function accordingly, go ahead! Every meta-analysis is different, and we encourage you to modify these functions to serve your own needs. (We typically have a `functions` folder in our replication archives where we keep all our custom functions, which is a nice way to keep your function files organized separately from your scripts.)
+
+## 2 subgroup analyses
+
+The second way we use `map_robust` is via subgroup analyses. For instance, in "Preventing Sexual Violence," we wanted to compare the results on ideas-based outcomes to our major categories of behavioral outcomes (perpetration, victimization, bystander behaviors, and involvement behaviors.) To do this, we use the `map` function from the `purrr` library to split the dataset and apply a function (Hadley Wickham calls this  "[The Split-Apply-Combine Strategy for Data Analysis](https://vita.had.co.nz/papers/plyr.pdf)").
+
+
+```{r split_by_behavioral_ideas_outcomes}
+library(purrr)
+sv_data |> split(~behavior_type) |> map(map_robust) |> bind_rows() 
+```
+
+A note about this: if your "group" (the thing you are running `purrr::split()` on) has only one data point, the resulting numbers won't be a pooled average effect, but instead will just be the ∆ and se and p-value of that individual estimate. If this comes up, you should explain that to your readers in a note on the table. 
+
+## 3 Making publication-ready tables out of subgroup analyses
+If we apply a few more functions, we can actually get pretty close to a publication-ready table. 
+
+`dplyr::bind_cols()` combines multiple data frames (in this case, a list of lists) into a single data frame.
+
+```{r split_plus_bind_cols}
+
+sv_data |> split(~behavior_type) |> map(map_robust) |> 
+  bind_rows(.id = "behavior_type")
+```
+
+Which you can turn into a variety of formats, e.g LateX or markdown, via `knitr::kable()`:
+
+```{r split_plus_kable}
+library(knitr)
+sv_data |> split(~behavior_type) |> map(map_robust) |> 
+  bind_rows() |> kable('markdown')
+```
+
+Here is a small function that add stars to text corresponding to p values:
+```{r significance_stars}
+get_significance_stars <- function(pval) {
+  sapply(pval, function(x) {
+    if (is.na(x)) {
+      ""
+    } else if (x < 0.001) {
+      "***"
+    } else if (x < 0.01) {
+      "**"
+    } else if (x < 0.05) {
+      "*"
+    } else {
+      ""
+    }
+  })
+}
+```
+
+Here we apply this function directly to the R code, and modify the columns to combine the ∆ and se into one column with the format `∆ (se)`: 
+
+```{r closer_to_pub_ready_table}
+sv_data |> split(~behavior_type) |> map(map_robust) |> 
+  bind_rows(.id = "behavior_type") |> 
+  mutate(delta_se = sprintf("%.3f%s (%.3f)", 
+                            Delta, 
+                            get_significance_stars(pval), se)) |> 
+  select(behavior_type, N_studies, delta_se)
+```
+
+Finally, we can use the [great table](https://gt.rstudio.com/) library (`gt`) library to format everything nicely and add explanatory notes:
+
+```{r pub_ready_table_with_gt}
+library(gt) 
+sv_data |> split(~behavior_type) |> map(map_robust) |> 
+  bind_rows(.id = "behavior_type") |> 
+  mutate(delta_se = sprintf("%.3f%s (%.3f)", 
+                            Delta, 
+                            get_significance_stars(pval), se)) |>
+  select(behavior_type, N_studies, delta_se) |> 
+gt() |>
+  tab_header(
+    title = "∆ by category of dependent variable") |>
+  cols_label(
+    behavior_type = "Behavior type",
+    N_studies = "N (Studies)",
+    delta_se = "∆ (se)"
+  ) |>
+  tab_source_note(
+    source_note = "* < 0.05, ** < 0.01, *** < 0.001.")
+ 
+```
+
+`gt` has a function called `as_latex()` that will convert this all into latex code directly.
+
+## 4 Next up
+[Writing your meta-analytic paper](writing-metas-vignette.html).

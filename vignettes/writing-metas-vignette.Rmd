@@ -1,0 +1,353 @@
+---
+title: "Writing your meta-analytic paper"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 7
+vignette: >
+  %\VignetteIndexEntry{3. Writing your meta-analytic paper}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+Now that we've [conducted our meta-analyses](meta-analysis-vignette.html), it's time to write the paper. This vignette covers three topics that help with that: functions for summary statistics, a function that help you turn your database into a bibliography, and some ggplot2-based visualizations that we've found useful.
+
+Once again, we'll illustrate with data from two previous meta-analyses: `sv_data` from "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)" and `contact_data` from "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)."
+
+## 1 Summary statistics functions
+
+### 1.1 `sum_lm`
+
+`sum_lm` takes the built in R functions `summary(lm())` and lets you use them in a sequence of pipes. In particular this is useful when you want to test for the magnitude of a relationship between two variables in many different subsets of data at once.
+
+```{r sum_lm demonstration}
+library(PaluckMetaSOP)
+sv_data |> sum_lm()
+
+# now in different subsets
+library(purrr)
+sv_data |> split(~study_design) |> map(sum_lm)
+```
+
+### 1.2 `sum_tab`
+
+`sum_tab`, like `sum_lm`, takes a built in function (`table`) and turns it into something that can be integrated into a sequence of pipes. Again, this is useful for when you want to see many tables at once, or put a few tables into a bigger table.
+
+```{r sum_tab_demonstration}
+library(dplyr)
+# let's say you want to see the table of `behavior_type` in `sv_data
+# you can do
+table(sv_data$behavior_type)
+
+# the sum_tab version
+sv_data |> sum_tab(behavior_type)
+
+# where this really becomes useful is something like:
+PaluckMetaSOP::sv_data |> split(~study_design) |>
+map(~ sum_tab(., behavior_type)) |> bind_rows(.id = "study_design")
+
+# Note: sum_tab() returns a table object. For more complex manipulations,
+# you can convert to a data frame:
+# as.data.frame(sum_tab(sv_data, behavior_type))
+```
+
+### 1.3 `study_count`
+
+This simple function counts how many studies are in a dataset or in different subsets of your data. It assumes your dataset has a variable called `unique_study_id`.
+
+```{r study_count_demonstration}
+sv_data |> study_count()
+sv_data |> split(~study_design) |> map(study_count) |> 
+  bind_rows(.id = "study_design")
+```
+
+### 2 Turning a database of studies into a bibliography file
+
+This function isn't quite "ready to go" enough to make it into the package as an independent function, but the basic idea is to take a list of DOIs and turn it into a bibliography. It is a wrapper around `RefManageR::WriteBib` that enables you to turn a list of DOI into a .bib file with an bibTeX entry for each DOI.
+
+To make use of this, you would include a column of DOIs or URLs for every study in your database. Neither of this package's built-in datasets has this, but let's use a different dataset to demonstrate.
+
+We'll also set `eval` to `F` so it doesn't continually re-run when the vignette builds (running this requires an API call). 
+
+```{r bib_stuff, eval=F}
+
+dat_with_dois <- structure(list(author = c("Abrahamse", "Alblas", "Allen", "Berndsen", 
+"Berndsen", "Berndsen", "Bianchi", "Coker", "Feltz", "Feltz", 
+"Feltz", "Feltz", "Jalil", "Lacroix", "Piester", "Piester", "Piester", 
+"Sparkman", "Sparkman", "Sparkman", "Sparkman", "Sparkman", "Sparkman", 
+"Sparkman"), year = c(2007L, 2023L, 2002L, 2005L, 2005L, 2005L, 
+2022L, 2022L, 2022L, 2022L, 2022L, 2022L, 2023L, 2020L, 2020L, 
+2020L, 2020L, 2017L, 2017L, 2021L, 2021L, 2021L, 2021L, 2021L
+), doi = c("10.1016/j.jenvp.2007.08.002", "10.1080/17524032.2022.2149587", 
+"10.1006/appe.2001.0474", "10.1016/j.appet.2004.10.003", "10.1016/j.appet.2004.10.003", 
+"10.1016/j.appet.2004.10.003", "10.1093/ajcn/nqab414", "10.1016/j.appet.2021.105824", 
+"10.1016/j.appet.2022.105981", "10.1016/j.appet.2022.105981", 
+"10.1016/j.appet.2022.105981", "10.1016/j.appet.2022.105981", 
+"10.1038/s43016-023-00712-1", "10.1016/j.foodqual.2020.103997", 
+"10.1016/j.appet.2020.104842", "10.1016/j.appet.2020.104842", 
+"10.1016/j.appet.2020.104842", "10.1177/0956797617719950", "10.1177/0956797617719950", 
+"10.1016/j.jenvp.2021.101592", "10.1016/j.jenvp.2021.101592", 
+"10.1016/j.jenvp.2021.101592", "10.1016/j.jenvp.2021.101592", 
+"10.1016/j.jenvp.2021.101592")), class = "data.frame", row.names = c(NA, 
+-24L))
+
+manage_references <- function(dat_with_dois, bib_file = './refs.bib') {
+
+  # Write bibs into bib file
+  for (entry in dat_with_dois$doi) {
+    RefManageR::WriteBib(bib = RefManageR::GetBibEntryWithDOI(doi = entry),
+                         file = bib_file,
+                         append = TRUE)
+  }
+
+  # Function to add DOI to the BibTeX file
+  add_doi_to_bib <- function(new_doi) {
+    RefManageR::WriteBib(bib = RefManageR::GetBibEntryWithDOI(new_doi),
+                         file = bib_file,
+                         append = TRUE)
+  }
+
+  # Return the function to add DOIs to the BibTeX file
+  return(list(add_doi_to_bib = add_doi_to_bib))
+}
+
+manage_references(dat_with_dois = dat_with_dois)
+
+```
+
+## 3 Visualizations
+
+### 3.1 Forest plot
+
+Forest plots are a staple of meta-analyses. Many R packages have functions to create them, e.g. `metafor::forest`. However, our meta-analytic figures typically add color coding to denote additional information about (e.g.) study design, theoretical category, or outcome type. There was no easy way to do that with existing functions, so here's one approach to doing that in ggplot2 (and some supplementary plotting libraries as well).
+
+```{r Forest plot}
+library(ggplot2)
+library(ggtext)
+model <- contact_data |> map_robust()
+
+bold_labels <- function(x) {
+  ifelse(x == "RE Estimate", "<b>RE Estimate</b>", x)
+}
+
+plot_dat <- as.data.frame(contact_data) |> 
+  mutate(lower_bound = d - (1.96 * se_d),
+         upper_bound = d + (1.96 * se_d)) |>
+  select(name_short, d, se_d, lower_bound, upper_bound, 
+         target_spelled_out) |> 
+  add_row(name_short = "RE Estimate", d = model$Delta, 
+          lower_bound = model$Delta - (1.96 * model$se),
+          upper_bound = model$Delta + (1.96 * model$se), 
+          target_spelled_out = NA)
+
+# Get unique study names excluding "RE Estimate"
+unique_studies <- unique(plot_dat$name_short[plot_dat$name_short != "RE Estimate"])
+
+# Append "RE Estimate" to the end of the list
+ordered_levels <- c(unique_studies, "RE Estimate")
+
+# Set this order to name_short
+plot_dat$name_short <- reorder(factor(plot_dat$name_short, levels = ordered_levels), desc(plot_dat$se_d))
+
+plot_dat |> ggplot(aes(x = d, y = name_short)) +
+  geom_point(data = subset(plot_dat, name_short == "RE Estimate"), 
+             shape = 18) + # shape = 5 for a transparent diamond 
+  geom_point(data = subset(plot_dat, name_short != "RE Estimate"), 
+             aes(color = target_spelled_out), shape = 18) +
+  geom_errorbar(data = subset(plot_dat, name_short != "RE Estimate"),
+                aes(xmin = lower_bound, xmax = upper_bound, color = target_spelled_out),
+                height = .1, orientation = "y") +
+  geom_vline(xintercept = 0, color = "black", alpha = .5) +
+  geom_vline(xintercept = model$Delta, 
+             color = 'black', lty = 'dashed') +
+  theme_minimal() +
+  theme(axis.text.y = element_markdown()) +  # Apply HTML formatting to y-axis text
+  scale_y_discrete(labels = bold_labels) +    # Use custom function for y-axis labels
+  scale_x_continuous(name = expression(paste("Glass's", " ", Delta))) +
+  labs(color = "Target of Prejudice") +
+  ylab("Study") +
+  ggtitle("Contact hypothesis forest plot") +
+  theme(plot.title = element_text(hjust = 0.5,
+                                  face = "bold"),
+        axis.line = element_line(colour = "black")) 
+```
+
+We didn't actually use this code in "The Contact Hypothesis Re-evaluated", but we probably would have if we were writing that paper now.
+
+### 3.2 Relationship between Standard Error and D
+
+A standard check for publication bias is to see if effect size is positively correlated with the size of the standard error. The idea is that in the presence of publication bias, smaller studies are more likely to get shelved if they produce null results, whereas large, well-powered studies are more likely to get published no matter what. In that case, you'd expect for small studies to be an inaccurate estimate of the true population effect size, and for larger studies to produce systematically smaller estimates.
+
+Here's a slightly simplified version of figure 1 from "The Contact Hypothesis Re-Evaluated:"
+
+```{r se_d_plot, warning=FALSE, message=FALSE}
+library(ggrepel)
+shape_orders <- c(19, 17, 15, 18)
+target_labels <- c("Age", "Disability", "Foreigners", "Gender", 
+                   "LGBT",  "Race", "Religion" )
+
+  ggplot(contact_data, 
+         aes(x = se_d, y = d, 
+             label = name_short)) +
+  geom_hline(yintercept = 0, lty = "dashed", colour = "grey") + 
+  geom_point(aes(shape = factor(pop),
+                 color = target_spelled_out), size = 3, alpha = NA) +
+  scale_shape_manual(values = shape_orders, name = "Population", 
+                     labels = c("Children grades 4-8","High school students",
+                                "College-aged subjects", "Adults over 25")) +
+  stat_smooth(aes(fill = NULL), lty = "dashed", fullrange = TRUE, 
+              method = "lm",
+              show.legend = FALSE, alpha = .1) +  
+    geom_label_repel(size = 3) +
+  xlab("Standard Errors") + 
+  ylab("Effect Sizes")  +
+  ggtitle("Contact hypothesis publication bias plot") +
+  labs(color = "Target of prejudice") +
+  theme_bw()
+
+```
+
+### 3.3 Descriptive figures
+
+This code produces figures that display descriptive characteristics of `sv_data` for "Preventing Sexual Violence. As you can see, this required a lot of custom code to account for particular things about how we put the dataset together, so it won't perfectly generalize to a new project; but we think the overall ideas are worth preserving and communicating. (The following was all written by John-Henry Pezzuto.)
+
+```{r sv_data_descriptive_figs, warning=FALSE, message=FALSE, fig.show='hold'}
+library(forcats)
+library(ggplot2)
+library(ggtext)
+library(ggthemes)
+library(patchwork)
+library(stringr)
+library(tidyr)
+
+country_fig = sv_data |>
+  distinct(unique_study_id, country) |> 
+  mutate(country = ifelse(country == "USA", "USA", "Rest of the world")) |> 
+  count(country, sort = T) |> 
+  mutate(country = fct_rev(fct_reorder(factor(country), n)),
+         perc = n / sum(n)) |>
+  ggplot(aes(country, n, label = n, fill = country)) +
+  geom_col() +
+  theme_bw() +
+  theme(axis.text = element_markdown(size = 12), 
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 14),
+        plot.title = element_markdown()) +
+  scale_y_continuous(breaks = seq(0, 300, by = 100), limits = c(0, 300)) +
+  scale_fill_manual(values = solarized_pal()(2)) +
+  guides(fill = "none") +
+  labs(title = "**a)** Number of Studies by Country",
+       x = NULL, 
+       y = "# of studies", 
+       col = NULL)
+
+setting_fig = sv_data |>
+    distinct(unique_study_id, setting, setting2) |> 
+    pivot_longer(cols = c("setting", "setting2"), values_to = "setting") |> 
+    drop_na(setting) |> 
+    count(setting, sort = T) |> 
+    mutate(setting = fct_rev(fct_reorder(setting, n)), 
+           perc = n / sum(n)) |>
+    ggplot(aes(setting, n, fill = setting)) +
+    geom_col() +
+    scale_fill_manual(values = ggthemes::tableau_color_pal('Tableau 10')(6)) +
+    labs(title = "**b)** Number of Studies by Setting",
+         x = NULL, 
+         y = "# of studies", 
+         col = NULL) +
+    theme_bw() +
+    guides(fill = "none") +
+    theme(axis.text = element_markdown(size = 12),
+          axis.title = element_text(size = 14),
+          legend.text = element_text(size = 14),
+          plot.title = element_markdown())
+
+dat_participant_sex <- sv_data |> # participant sex lines
+  mutate(participant_sex = 
+           if_else(participant_sex %in% 
+                     c("male and female in mixed groups", 
+                       "male and female in separate groups and also in combined groups",
+                       "male and female in separate groups",
+                       "male and female with group composition not specified",
+                       "general population"), 
+                   "mixed gender groups", 
+                   participant_sex)) |>
+  distinct(year, unique_study_id, participant_sex) |>
+  filter(participant_sex %in% 
+           c("mixed gender groups", "only male", "only female")) |>
+  count(year, participant_sex) |>
+  add_row(year = 1985, participant_sex = "mixed gender groups") |>
+  complete(year, participant_sex, fill = list(n = 0)) |>
+  mutate(participant_sex = str_to_title(participant_sex)) |>
+  mutate(participant_sex = factor(participant_sex,
+                                  levels = c("Mixed Gender Groups",
+                                             "Only Male", 
+                                             "Only Female")))
+tt_gender_fig = dat_participant_sex |>
+    ggplot(aes(year, n, col = participant_sex)) +
+    geom_line(linewidth = 2) +
+    scale_x_continuous(
+      limits = c(1985, 2018),
+      breaks = c(1985, seq(1985, 2020, by = 5), 2018)
+    ) +
+    scale_color_manual(values = ggthemes::palette_pander(3)) +
+    theme_bw() +
+    theme(
+      axis.text = element_markdown(size = 12), 
+      axis.title = element_text(size = 14),
+      legend.text = element_text(size = 14),
+      plot.title = element_markdown(),
+      legend.position = "bottom"
+    ) +
+    labs(
+      title = "**c)** Number of Studies Over Time by Group Gender (1985-2018)",
+      x = NULL,
+      y = "# of studies",
+      col = NULL
+    )
+
+# The patchwork library enables this arrangement:
+country_fig / setting_fig / tt_gender_fig 
+```
+
+### 3.4 correlation between ideas-based and behavioral outcomes
+
+For "Preventing Sexual Violence," we wanted to check whether changes in ideas were linked to changes in behavior. We first created a subset of our dataset with just studies that measured both categories, and then made a scatterplot that plotted changes in one dimension against changes in the other. The black line represents what a 1-to-1 correlation between the two outcomes would have looked like, and the gray line is what we actually observed.
+
+```{r attitude_behavioral_scatterplot}
+
+sv_data |> filter(has_both == 'both') |>
+  group_by(author, year, study_design, unique_study_id, scale_type) |>
+  filter(delay == min(delay)) |>
+  summarise(mean_d = mean(d),
+         mean_var_d = mean(var_d),
+         mean_se_d = mean(se_d)) |>
+  pivot_wider(id_cols = c(author, year, unique_study_id, study_design),
+    names_from = c(scale_type),
+    values_from = c(mean_d, mean_var_d, mean_se_d)) |>
+  ggplot(aes(x = mean_d_ideas,
+             y = mean_d_behavior)) +
+  geom_point(aes(color = study_design),
+             size = 3) +
+  geom_abline(slope = 1,
+              lty = 'dashed') +
+  geom_smooth(lty = "dashed",
+              method = "lm",
+              se = FALSE,
+              color = 'grey') +
+  labs(title = "Correlation between ideas and behavioral change",
+       x = "Effect size (ideas)",
+       y = "Effect size (behaviors)",
+       color = "Study Design") +
+ guides(color = guide_legend(title = "")) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 14),
+        legend.position = "bottom",
+        legend.box = "vertical")
+```
