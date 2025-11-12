@@ -42,6 +42,8 @@ Lastly, all terms are ran together.
 
 \item{alpha}{Numeric p-value for the standard errors. Default .05.}
 
+\item{multiple_testing}{Method for multiple testing correction (optional)}
+
 \item{print_summary}{TRUE/FALSE. Whether to print model summaries or not. Default is FALSE.}
 }
 \value{

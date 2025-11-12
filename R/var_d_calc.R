@@ -20,7 +20,7 @@
 #'
 #' # example 2: calculating d, var_d, and se_d for an entire dataset
 #' \dontrun{
-#' PaluckMetaSOP::contact_data |>
+#' BLPlabtools::contact_data |>
 #' select(-var_d)
 #' mutate(var_d = mapply(
 #' FUN = var_d_calc,

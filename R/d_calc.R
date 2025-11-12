@@ -29,7 +29,7 @@
 #' # Example: Use mapply to calculate d from rows in dataset
 #' \dontrun{
 #' library(dplyr)
-#' PaluckMetaSOP::contact_data |>
+#' BLPlabtools::contact_data |>
 #' select(-d) |> # remove d in order to recalculate it
 #' mutate(d = mapply(
 #' FUN = d_calc,

@@ -19,7 +19,7 @@
 #' @seealso \code{\link{d_calc}} and \code{\link{var_d_calc}} for preparing data before meta-analysis
 #' @examples
 #' # example 1: meta-analyze entire dataset
-#' PaluckMetaSOP::sv_data |> map_robust()
+#' BLPlabtools::sv_data |> map_robust()
 #' # example 2: meta-analyze many subsets and create overall table
 #' \dontrun{
 #' library(dplyr); library(purrr)

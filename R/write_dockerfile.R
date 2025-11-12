@@ -25,8 +25,12 @@
 #'
 #'@importFrom sessioninfo package_info
 #'
-#' @examples write_dockerfile()
-#' @examples write_dockerfile(write_file = FALSE, image = 'r-base:4.4.1')
+#' @examples
+#' \dontrun{
+#' write_dockerfile()
+#' @examples write_dockerfile(write_file = FALSE,
+#' } image = 'r-base:4.4.1')
+#' }
 #' @examples write_dockerfile(all_packages = TRUE) # Include all installed packages
 write_dockerfile <- function(write_file = TRUE,
                              org = "rocker",
