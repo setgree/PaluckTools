@@ -1,6 +1,9 @@
 # Effect Size Conversion Helpers
 # These are utility functions for data preparation and effect size conversions
 
+#' @importFrom stats qt
+NULL
+
 #' Convert Confidence Interval to Standard Deviation
 #'
 #' Converts confidence intervals to standard deviation using Cochrane methodology.

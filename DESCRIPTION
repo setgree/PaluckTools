@@ -18,11 +18,12 @@ Description: A comprehensive toolkit for meta-analysis and experimental data
 License: MIT + file LICENSE
 Depends: 
     R (>= 4.1)
-Imports: 
+Imports:
     dplyr (>= 1.1),
     estimatr,
     lmtest,
     metafor (>= 4.6),
+    methods,
     multiwayvcov,
     rlang (>= 1.1),
     sandwich,

@@ -40,7 +40,7 @@ f_test_result <- d_calc(stat_type = "f_test", stat = 1, n_t = 50, n_c = 40)
 # Example: Use mapply to calculate d from rows in dataset
 \dontrun{
 library(dplyr)
-PaluckMetaSOP::contact_data |>
+BLPlabtools::contact_data |>
 select(-d) |> # remove d in order to recalculate it
 mutate(d = mapply(
 FUN = d_calc,

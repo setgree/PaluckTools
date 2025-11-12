@@ -9,8 +9,8 @@
 #' We elaborate more on this estimator in the paper's appendix.
 #'
 #' @param stat_type Category of statistical result reported or derived from the paper.
-#' Possible values are "d", "d_i_d", "d_i_m", "d_i_p", "f_test", "log_odds_ratio",
-#' "odds_ratio", "reg_coef", "s_m_d", "t_test", "unspecified null".
+#' Possible values are "d", "d_i_d", "d_i_m", "d_i_p", "eta_squared", "f_test",
+#' "log_odds_ratio", "odds_ratio", "reg_coef", "s_m_d", "t_test", "unspecified null", "z".
 #' @param stat Unstandardized effect size.
 #' @param sample_sd Standard deviation of the relevant sample (preferably of the control group).
 #' @param n_t Treatment group sample size.
@@ -62,6 +62,12 @@ d_calc <- function(stat_type, stat, sample_sd, n_t, n_c) {
              stat_type == "F") {
     # Calculate Cohen's D for f test
     d <- round(sqrt((stat * (n_t + n_c)) / (n_t * n_c)), digits = 3)
+  } else if (stat_type == "eta_squared") {
+    # Calculate Cohen's D for eta squared
+    d <- sqrt(stat) / sqrt(1 - stat)
+  } else if (stat_type == "z") {
+    # Calculate Cohen's D for z test
+    d <- stat / sqrt(n_t + n_c)
   } else if (stat_type == "odds_ratio") {
     # Calculate Cohen's D for odds ratio
     d <- log(stat) * sqrt(3) / pi

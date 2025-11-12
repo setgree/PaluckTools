@@ -27,7 +27,7 @@ some circumstances but not others. Adapt to your needs.
 }
 \examples{
 # example 1: meta-analyze entire dataset
-PaluckMetaSOP::sv_data |> map_robust()
+BLPlabtools::sv_data |> map_robust()
 # example 2: meta-analyze many subsets and create overall table
 \dontrun{
 library(dplyr); library(purrr)

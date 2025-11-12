@@ -23,15 +23,16 @@
 #' @param all_packages If TRUE, includes all installed packages. If FALSE (default),
 #' only includes currently loaded packages.
 #'
-#'@importFrom sessioninfo package_info
+#' @importFrom sessioninfo package_info
+#' @importFrom utils installed.packages
+#' @export
 #'
 #' @examples
 #' \dontrun{
 #' write_dockerfile()
-#' @examples write_dockerfile(write_file = FALSE,
-#' } image = 'r-base:4.4.1')
+#' write_dockerfile(write_file = FALSE, image = 'r-base:4.4.1')
+#' write_dockerfile(all_packages = TRUE) # Include all installed packages
 #' }
-#' @examples write_dockerfile(all_packages = TRUE) # Include all installed packages
 write_dockerfile <- function(write_file = TRUE,
                              org = "rocker",
                              image = NULL,

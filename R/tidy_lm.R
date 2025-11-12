@@ -1,3 +1,8 @@
+#' @importFrom methods hasArg
+#' @importFrom stats pf
+#' @importFrom utils tail
+NULL
+
 #' tidy_lm
 #'
 #' A function to streamline the process of running regressions in experimental psychology

@@ -48,7 +48,9 @@ only includes currently loaded packages.}
 Convert the output from \code{sessionInfo()} into the contents of a Dockerfile
 }
 \examples{
+\dontrun{
 write_dockerfile()
 write_dockerfile(write_file = FALSE, image = 'r-base:4.4.1')
 write_dockerfile(all_packages = TRUE) # Include all installed packages
+}
 }

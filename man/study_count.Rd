@@ -21,17 +21,17 @@ has a variable called \code{unique_study_id}.
 }
 \examples{
 # simple example: entire datasets
-PaluckMetaSOP::sv_data |> study_count()
+BLPlabtools::sv_data |> study_count()
 # example with split, apply to many datasets, and create summary table
 \dontrun{
 library(purrr)
-PaluckMetaSOP::sv_data |> split(~study_design) |>
+BLPlabtools::sv_data |> split(~study_design) |>
 map(study_count) |> bind_rows(.id = "study_design")
 }
 
 }
 \seealso{
-\code{\link{sum_tab}} for frequency tables, \code{\link{sum_lm}} for regression summaries
+\code{\link{summarise_table}} for frequency tables, \code{\link{summarise_lm}} for regression summaries
 
 Other summary functions: 
 \code{\link{summarise_lm}()},
