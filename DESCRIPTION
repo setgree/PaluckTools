@@ -5,6 +5,8 @@ Authors@R: c(
     person("Seth Ariel", "Green", email = "setgree@stanford.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-3909-1969")),
     person("John-Henry", "Pezzuto", email = "jdp2150@columbia.edu", role = c("aut"), comment = c(ORCID = "0000-0001-5213-4201"))
     )
+Author: Seth Ariel Green [aut, cre], John-Henry Pezzuto [aut]
+Maintainer: Seth Ariel Green <setgree@stanford.edu>
 Description: A comprehensive toolkit for meta-analysis and experimental data
     analysis developed by the BLP Lab. Provides functions for converting
     effect sizes from various statistical reports into standardized formats
