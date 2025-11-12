@@ -58,21 +58,24 @@ to the right workflow for your needs.
 
 ## Quick Start
 
-### Convert a t-test to Cohen’s d
+### Calculate effect sizes
 
 ``` r
 library(BLPlabtools)
 
-# You have: t = 2.5, n_treatment = 30, n_control = 30
-d <- d_calc(stat_type = "t_test", stat = 2.5, n_t = 30, n_c = 30)
-variance <- var_d_calc(stat_type = "t_test", stat = 2.5, n_t = 30, n_c = 30)
+# Example: Convert difference in means to Cohen's d
+d <- d_calc(stat_type = "d_i_m", stat = 0.7, sample_sd = 0.75)
+# Result: d = 0.933
 
-# Result: d = 0.645, variance = 0.069
+# Calculate variance of the effect size
+variance <- var_d_calc(d = d, n_t = 21, n_c = 21)
+# Result: variance = 0.092
 ```
 
-### Run a quick meta-analysis
+### Run a meta-analysis
 
 ``` r
+library(BLPlabtools)
 library(dplyr)
 
 # Use built-in contact hypothesis data
@@ -80,34 +83,21 @@ contact_data |>
   map_robust() |>
   print()
 
-# Result shows pooled effect size, SE, CI, and heterogeneity
+# Shows: pooled effect = 0.29, SE = 0.09, CI, heterogeneity stats
 ```
 
-### Get cluster-robust standard errors
+### Calculate cluster-robust standard errors
 
 ``` r
-# Your regression
-model <- lm(outcome ~ treatment + control, data = your_data)
+library(BLPlabtools)
+data(contact_data)
 
-# Add cluster-robust SEs
-robust_results <- robust_se(model, cluster = your_data$school_id)
+# Run a regression
+model <- lm(d ~ days_delay + publish, data = contact_data)
+
+# Add cluster-robust SEs by unique_study_id
+robust_results <- robust_se(model, cluster = contact_data$unique_study_id)
 robust_results[[2]]  # Coefficient table with robust SEs
-```
-
-### Run multiple regression specifications
-
-``` r
-# Test treatment on multiple outcomes with different controls
-models <- tidy_lm(
-  data = your_data,
-  dv = c("test_score", "attendance", "attitudes"),
-  terms = c("treatment", "baseline_score", "gender"),
-  treatment = "treatment",
-  style = "incremental"  # Progressively adds controls
-)
-
-# Extract treatment effects
-models |> select(dv, treatment_coef, treatment_p)
 ```
 
 ## The functions
