@@ -75,11 +75,11 @@ test_that("sum_tab works with tibbles", {
 
 test_that("sum_tab works with included dataset", {
   # Use the sv_data from the package
-  result <- sum_tab(PaluckMetaSOP::sv_data, behavior_type)
+  result <- sum_tab(BLPlabtools::sv_data, behavior_type)
 
   expect_s3_class(result, "table")
   expect_true(length(result) > 0)
-  expect_true(sum(result) == nrow(PaluckMetaSOP::sv_data))
+  expect_true(sum(result) == nrow(BLPlabtools::sv_data))
 })
 
 test_that("sum_tab handles NA values correctly", {
