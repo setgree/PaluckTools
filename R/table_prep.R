@@ -97,13 +97,14 @@ nothing <- function(data) data
 #' @export
 #'
 #' @examples
-#'
+#' \dontrun{
 #' my_table_rough <- capture.output(stargazer(mtcars))
 #' my_table <- table_label(my_table_rough, "demographics")
 #' print_table(table)
 #'
 #' # Within Markdown Document
 #' `\label{tab:demographics}` # this will print as Table 1, and update depending on the order of the tables.
+#' }
 table_label <- function(latex_table, caption){
   # if label exists
   labelnum <- which(stringr::str_detect(latex_table, "\\label\\{.*\\}"))[1]
@@ -150,10 +151,11 @@ undo_closure <- function(data){
 #' @export
 #'
 #' @examples
-#'
+#' \dontrun{
 #' my_table_rough <- capture.output(stargazer(mtcars))
 #' my_table <- add_endnote(table = my_table_rough, note = "my endnote is very long", size_in_inches = 6, rm.stargazer.stars = TRUE)
 #' print_table(table)
+#' }
 add_endnote <- function(table,  note, size_in_inches = 6, rm.stargazer.stars = TRUE){
   # erase first note
   if (rm.stargazer.stars == TRUE){
@@ -185,10 +187,12 @@ add_endnote <- function(table,  note, size_in_inches = 6, rm.stargazer.stars = T
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' model <- lm(hp ~ wt, mtcars)
 #' table_rough <- stargazer(model, report = "csp")
 #' table <- stargazer_pvalues(table_rough, "brackets")
 #' print_table(table)
+#' }
 stargazer_pvalues <- function(table, format){
   if (format == "brackets"){
     left = "\\["
@@ -236,8 +240,10 @@ stargazer_rowname <- function(table, row_name, row_number){
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' table <- capture.output(kable(mtcars, format = "latex"))
 #' print_table(table)
+#' }
 print_table <- function(latex_table){
   cat(paste(latex_table, collapse = "\n"))
 }
