@@ -1,7 +1,9 @@
 # BLPlabtools
 
 <!-- badges: start -->
-
+[![R-CMD-check](https://github.com/setgree/BLPlabtools/workflows/R-CMD-check/badge.svg)](https://github.com/setgree/BLPlabtools/actions)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
 BLPlabtools documents the [BLP
@@ -90,6 +92,7 @@ contact_data |>
 
 ``` r
 library(BLPlabtools)
+library(broom)
 data(contact_data)
 
 # Run a regression
@@ -97,7 +100,12 @@ model <- lm(d ~ days_delay + publish, data = contact_data)
 
 # Add cluster-robust SEs by unique_study_id
 robust_results <- robust_se(model, cluster = contact_data$unique_study_id)
-robust_results[[2]]  # Coefficient table with robust SEs
+
+# View as a formatted table
+robust_results[[2]]  # Print coefficient table with cluster-robust SEs
+
+# Or convert to a tidy data frame
+tidy(robust_results[[2]])
 ```
 
 ## The functions
