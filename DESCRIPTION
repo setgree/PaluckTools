@@ -2,11 +2,11 @@ Package: BLPlabtools
 Title: Tools for meta-analysis and experimental data from the BLP Lab
 Version: 0.1.0
 Authors@R:
-    c(person("Seth", "Green", , "sag2212@columbia.edu", role = c("aut", "cre"),
+    c(person("Seth Ariel", "Green", , "sag2212@columbia.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-3909-1969")),
     person("John-Henry", "Pezzuto", role = c("aut"),
            comment = c(ORCID = "0000-0001-5213-4201")))
-Maintainer: Seth Green <sag2212@columbia.edu>
+Maintainer: Seth Ariel Green <sag2212@columbia.edu>
 Description: A comprehensive toolkit for meta-analysis and experimental data
     analysis developed by the BLP Lab. Provides functions for converting
     effect sizes from various statistical reports into standardized formats
