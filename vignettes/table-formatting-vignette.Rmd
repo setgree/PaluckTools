@@ -79,7 +79,7 @@ The `process_group()` function creates complete moderator analysis tables with o
 design_table <- sv_data |>
   process_group(
     group_var = "study_design",
-    ref_level = "RCT",
+    ref_level = "Randomized Controlled Trial",
     include_tau = TRUE
   )
 
@@ -87,15 +87,15 @@ kable(design_table)
 ```
 
 The output includes:
-- `Moderator`: The level name (RCT, Quasi-experimental, etc.)
+- `Moderator`: The level name (Randomized Controlled Trial, Quasi-Experimental, etc.)
 - `N_Studies` and `N_Estimates`: Sample sizes
 - `Delta`: Effect size estimate for this level
 - `tau`: Residual heterogeneity
 - `CI`: Confidence interval
 - `p_val`: P-value testing if this level's effect differs from zero
-- `p_val_ref`: P-value comparing this level to the reference level (RCT)
+- `p_val_ref`: P-value comparing this level to the reference level (Randomized Controlled Trial)
 
-Notice "ref" for RCT's `p_val_ref`—it's the reference level, so other levels are compared to it.
+Notice "ref" for Randomized Controlled Trial's `p_val_ref`—it's the reference level, so other levels are compared to it.
 
 ## Custom level ordering
 
@@ -106,8 +106,8 @@ Control the order of moderator levels in the output:
 behavior_table <- sv_data |>
   process_group(
     group_var = "behavior_type",
-    ref_level = "Attitudes",
-    order_levels = c("Attitudes", "Perpetration", "Victimization"),
+    ref_level = "Ideas",
+    order_levels = c("Ideas", "Perpetration", "Victimization", "Bystander", "Involvement"),
     include_tau = FALSE
   )
 
@@ -123,8 +123,8 @@ For more control, use `run_subset_meta_analysis()` directly:
 rct_only <- sv_data |>
   run_subset_meta_analysis(
     group_var = "study_design",
-    level = "RCT",
-    approach_name = "Randomized Controlled Trials",
+    level = "Randomized Controlled Trial",
+    approach_name = "RCTs only",
     include_tau = TRUE
   )
 
@@ -264,7 +264,7 @@ Here's a typical workflow for creating publication tables from meta-analytic dat
 moderator_results <- sv_data |>
   process_group(
     group_var = "study_design",
-    ref_level = "RCT",
+    ref_level = "Randomized Controlled Trial",
     include_tau = TRUE
   )
 
