@@ -37,12 +37,6 @@ This vignette demonstrates tools for creating publication-ready tables from both
 - **Overall meta-analysis results** → `extract_model_results()`
 - **Custom filtering or subsets** → `run_subset_meta_analysis()`
 
-**For experimental/regression tables:**
-
-- **Run many specifications** → `tidy_lm()`
-- **Cluster-robust SEs for one model** → `robust_se()`
-- **Create stargazer tables from tidy_lm** → `star_ready()`
-
 **For table formatting:**
 
 - **Format numbers consistently** → `two_digits()`, `add_parentheses()`, `add_brackets()`
@@ -337,6 +331,8 @@ formatted_table <- latex_table |>
 
 print_table(formatted_table)
 
+# Create directory if it doesn't exist
+dir.create("tables", showWarnings = FALSE)
 writeLines(formatted_table, "tables/moderator_table.tex")
 ```
 
@@ -361,4 +357,4 @@ Table \ref{tab:moderator_analysis} shows effect sizes by study design.
 - Use `print_table()` to preview in console
 - Add `table_label()` for cross-referencing in LaTeX documents
 
-For complete function documentation, see `?process_group`, `?run_subset_meta_analysis`, `?extract_model_results`, `?table_prep`, `?star_ready`.
+For complete function documentation, see `?process_group`, `?run_subset_meta_analysis`, `?extract_model_results`.
