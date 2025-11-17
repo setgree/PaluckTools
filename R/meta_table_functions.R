@@ -119,8 +119,12 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
   estimate <- as.numeric(model$beta)
   ci_lower <- model$ci.lb
   ci_upper <- model$ci.ub
-  p_val <- format(round(model$pval, 3), scientific = FALSE)
-  p_val <- sub("^0\\.", ".", p_val)  # Remove leading zero
+  # Format p-value, handling very small values
+  p_val <- ifelse(
+    model$pval < 0.001,
+    "< .001",
+    sub("^0\\.", ".", format(round(model$pval, 3), scientific = FALSE))
+  )
 
   # Create result tibble
   result <- tibble::tibble(
@@ -307,9 +311,7 @@ process_group <- function(data, group_var, ref_level, order_levels = NULL, inclu
   # Add the second p-values to the results
   group_results <- group_results |>
     mutate(
-      p_val_ref = group_p_values[Moderator],
-      # Replace both p-values with N/A if both are 0
-      across(c(p_val, p_val_ref), ~ ifelse(. %in% c("0", ".000"), "N/A", .))
+      p_val_ref = group_p_values[Moderator]
     )
 
   # Reorder columns
