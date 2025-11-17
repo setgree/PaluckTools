@@ -37,7 +37,4 @@ round_to(23, 10, direction = "up")  # Returns 30
 round_to(3.14159, 0.01)  # Returns 3.14
 
 }
-\author{
-John-Henry Pezzuto
-}
 \concept{utility functions}

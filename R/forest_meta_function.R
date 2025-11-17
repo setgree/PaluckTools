@@ -8,8 +8,6 @@
 #' @param x A dataset containing effect sizes with columns for effect size (`d`),
 #'   variance (`var_d`), `author`, and `year`.
 #'
-#' @author John-Henry Pezzuto
-#'
 #' @return A tibble with one row containing:
 #' \describe{
 #'   \item{author}{First author name from the group}

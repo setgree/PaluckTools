@@ -52,3 +52,6 @@ A \code{tibble} containing all linear models, and data on what variables are inc
 \description{
 A function to streamline the process of running regressions in experimental psychology
 }
+\author{
+John-Henry Pezzuto
+}

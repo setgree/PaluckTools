@@ -1,3 +1,5 @@
+# All functions in this file authored by John-Henry Pezzuto
+
 #' Add Parentheses
 #'
 #' Adds parenthesis to input

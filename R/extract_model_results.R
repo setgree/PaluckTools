@@ -13,8 +13,6 @@ utils::globalVariables(c("unique_study_id", "var_d"))
 #' @param approach_name A character string describing the analysis approach
 #'   or subset (default: "Overall"). This will appear in the output table.
 #'
-#' @author John-Henry Pezzuto
-#'
 #' @return A tibble with one row containing:
 #' \describe{
 #'   \item{Approach}{Name of the analysis approach}

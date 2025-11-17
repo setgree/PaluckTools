@@ -19,3 +19,6 @@ Returns a tibble with all lms that can be directly used with stargazer.
 Star Ready
 Prepares output from \code{tidy_lm} for use with the package stargazer
 }
+\author{
+John-Henry Pezzuto
+}

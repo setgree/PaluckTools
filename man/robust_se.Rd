@@ -17,3 +17,6 @@ A list with two elements: the robust covariance matrix and coefficient test resu
 \description{
 Calculate cluster-robust standard errors for linear models
 }
+\author{
+John-Henry Pezzuto
+}

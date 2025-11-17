@@ -23,8 +23,11 @@ NULL
 #' @param multiple_testing Method for multiple testing correction (optional)
 #' @param print_summary TRUE/FALSE. Whether to print model summaries or not. Default is FALSE.
 #' @param data A `data.frame`
-#' @export
+#'
 #' @return  A `tibble` containing all linear models, and data on what variables are included in each model.
+#'
+#' @author John-Henry Pezzuto
+#' @export
 # data = mtcars; data %<>% mutate(cyl = factor(cyl))
 # dv = c("mpg", "hp"); style = "default"; terms = "cyl"; treatment = "cyl"; robust_se = FALSE; alpha = .05; print_summary = FALSE
 # lm(mpg ~ cyl, data = data)

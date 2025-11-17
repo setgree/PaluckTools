@@ -4,7 +4,10 @@
 #'
 #' @param model A fitted linear model object (from lm())
 #' @param cluster A vector indicating cluster membership for computing robust SEs
+#'
 #' @return A list with two elements: the robust covariance matrix and coefficient test results
+#'
+#' @author John-Henry Pezzuto
 #' @export
 robust_se <- function(model, cluster){
   M <- length(unique(cluster))

@@ -3,8 +3,11 @@
 #'
 #' @param tidy_lm_df A `tibble` from the `tidy_lm` function. No columns can be missing or out of the original order. Rows can be appended so long as they use the same data.
 #' @param data Dataframe with corresponding data that was used in the tidy_lm function.
-#' @export
+#'
 #' @return Returns a tibble with all lms that can be directly used with stargazer.
+#'
+#' @author John-Henry Pezzuto
+#' @export
 #tidy_lm_df <- four_a_
 star_ready <- function(tidy_lm_df, data){
 
