@@ -33,10 +33,11 @@ We'll cover both types of tables using realistic examples from the built-in data
 
 When conducting meta-analyses, you often need to create tables showing how effect sizes vary across moderator variables (study design, intervention type, population characteristics, etc.). BLPlabtools provides a suite of functions to automate this process:
 
-- `run_subset_meta_analysis()`: Run meta-analysis on data subsets
-- `run_meta_regression()`: Compare moderator levels via meta-regression
-- `process_group()`: Create complete moderator tables with one function
+- `process_group()`: Create complete moderator tables with one function (high-level)
 - `extract_model_results()`: Extract overall meta-analysis results
+- `run_subset_meta_analysis()`: Run meta-analysis on data subsets (for custom filtering)
+
+**Note:** `process_group()` internally uses `run_meta_regression()` to generate p-values comparing moderator levels. You rarely need to call `run_meta_regression()` directly.
 
 ## Example data: Sexual violence interventions
 
