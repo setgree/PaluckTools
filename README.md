@@ -16,7 +16,7 @@ This package integrates functions from four sources:
   Re-evaluated](https://doi.org/10.1017/bpp.2018.25)" and "[Preventing
   Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed
   Solution](https://doi.org/10.1177/15291006231221978)"
--  [vegan-meta](https://github.com/hsflabstanford/vegan-meta), code and data for "[Meaningfully reducing consumption
+-  [vegan-meta](https://github.com/hsflabstanford/vegan-meta) - code and data for "[Meaningfully reducing consumption
   of meat and animal products is an unsolved problem:
   A meta-analysis](https://doi.org/10.1016/j.appet.2025.108233)"
   (this meta-analysis was not conducted at the BLP Lab but was highly influenced by BLP Lab methods)
