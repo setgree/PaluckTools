@@ -24,16 +24,6 @@ knitr::opts_chunk$set(
 
 Now that we [have our vectors of ∆, variance, and standard errors for each paper](d-calc-vignette.html), it's time to perform a meta-analysis—the statistical procedure by which we combine results from multiple studies to estimate an overall effect.
 
-## What is meta-analysis?
-
-**Meta-analysis** pools effect sizes across studies to answer: "What is the average effect of this intervention/phenomenon across all available evidence?" Instead of relying on a single study's estimate, we synthesize many studies' results, weighted by their precision (studies with larger samples get more weight).
-
-**Why meta-analysis matters:**
-
-- **Increased statistical power**: Combining studies gives us more precise estimates than any single study
-- **Generalizability**: We can see if effects hold across different populations, settings, and methods
-- **Moderator analysis**: We can test whether effects vary by study characteristics (design, population, intervention type, etc.)
-
 ## Why clustering matters
 
 A key challenge in meta-analysis is that **effect sizes from the same study are not independent**. If a study reports results for multiple outcomes or subgroups, those estimates share:
@@ -94,6 +84,13 @@ library(BLPlabtools)
 sv_data |> map_robust()
 ```
 
+This is equivalent to running:
+
+```r
+robust(x = metafor::rma(yi = sv_data$d, vi = sv_data$var_d),
+       cluster = sv_data$unique_study_id)
+```
+
 This output tells us:
 
 - **N_studies = 295**: We have 295 unique studies
@@ -103,13 +100,9 @@ This output tells us:
 - **pval < 2e-16**: The effect is highly statistically significant
 - **I2 = 94.19%**: High heterogeneity—effect sizes vary substantially across studies
 
-### Understanding the output
+Our function is different in a few respects compared to running metafor directly. First, it's designed to take in a dataset via a piped operation (`|>`), which was actually the main reason we wrote it in the first place (we were in the habit of using a lot of pipes). Second, so long as your dataset contains variables called `d`, `var_d`, and `unique_study_id`, it's a lot easier to type. Third, it returns a truncated output that corresponds to the information we were actually recording in our results sections.
 
-In a published meta-analysis, this overall pooled effect becomes your main finding. For example, in the Contact Hypothesis paper, we reported an overall effect size similar to this in our main results table:
-
-![Main results from Contact Hypothesis meta-analysis](images/contact-main-results.png)
-
-This is equivalent to running the following metafor code:
+To see full `metafor` output, run the equivalent code:
 ```{r robust_rma}
 library(metafor)
 robust(x = metafor::rma(yi = sv_data$d, vi = sv_data$var_d), 
@@ -143,20 +136,9 @@ rma(yi = d, vi = var_d, data = contact_data)
 
 If you want to cluster at a different level, or call your cluster variable something different and modify the function accordingly, go ahead! Every meta-analysis is different, and we encourage you to modify these functions to serve your own needs. (We typically have a `functions` folder in our replication archives where we keep all our custom functions, which is a nice way to keep your function files organized separately from your scripts.)
 
-## 2 Moderator analyses: Do effects vary by study characteristics?
+## 2 Example moderator analyses
 
 After establishing an overall pooled effect, we typically want to know: **Does the effect size differ across different types of studies or outcomes?** This is called **moderator analysis** or **subgroup analysis**.
-
-### Why run moderator analyses?
-
-High heterogeneity (I² > 75%) suggests that effect sizes vary substantially across studies. Moderator analyses help us understand this variation by testing whether effects differ by:
-
-- **Study design** (RCTs vs. quasi-experiments vs. observational studies)
-- **Outcome type** (attitudes vs. behaviors; short-term vs. long-term outcomes)
-- **Population** (children vs. adults; different cultural contexts)
-- **Intervention characteristics** (dosage, delivery method, theoretical approach)
-
-### Example: Effects by behavior type
 
 In "Preventing Sexual Violence," we wanted to compare effects on **ideas** (attitudes, beliefs) versus different types of **behaviors** (perpetration, victimization, bystander actions, involvement). Here's how we do this with the split-apply-combine strategy:
 
