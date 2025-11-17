@@ -23,6 +23,8 @@ utils::globalVariables(c("unique_study_id", "var_d", "Delta", "Moderator",
 #' @param include_tau Logical indicating whether to include tau (residual
 #'   heterogeneity) in the output (default: FALSE).
 #'
+#' @author John-Henry Pezzuto
+#'
 #' @return A tibble with meta-analysis results including columns for the
 #'   moderator level, number of studies, number of estimates, effect size
 #'   estimate (Delta), confidence interval, and p-value. If include_tau is TRUE,
@@ -162,6 +164,8 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
 #' @param group_var Name of the grouping variable (as string).
 #' @param ref_level The reference level for the meta-regression.
 #'
+#' @author John-Henry Pezzuto
+#'
 #' @return A named vector of formatted p-values, with the reference level
 #'   marked as "ref" and other levels showing their p-values from the
 #'   meta-regression.
@@ -250,6 +254,8 @@ run_meta_regression <- function(data, group_var, ref_level) {
 #' @param ref_level The reference level for meta-regression comparisons.
 #' @param order_levels Optional vector specifying the order of levels in the output.
 #' @param include_tau Logical indicating whether to include tau (default: FALSE).
+#'
+#' @author John-Henry Pezzuto
 #'
 #' @return A tibble with one row per moderator level containing:
 #' \describe{

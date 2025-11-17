@@ -10,6 +10,8 @@
 #' @param direction The direction to round: "default" for standard rounding,
 #'   "up" for ceiling, "down" for floor.
 #'
+#' @author John-Henry Pezzuto
+#'
 #' @return A numeric value or vector rounded to the specified accuracy.
 #'
 #' @family utility functions

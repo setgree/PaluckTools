@@ -51,4 +51,7 @@ Other meta-analysis functions:
 \code{\link{run_meta_regression}()},
 \code{\link{run_subset_meta_analysis}()}
 }
+\author{
+John-Henry Pezzuto
+}
 \concept{meta-analysis functions}

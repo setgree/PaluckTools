@@ -81,4 +81,7 @@ Other meta-analysis functions:
 \code{\link{process_group}()},
 \code{\link{run_meta_regression}()}
 }
+\author{
+John-Henry Pezzuto
+}
 \concept{meta-analysis functions}
