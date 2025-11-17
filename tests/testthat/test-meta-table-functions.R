@@ -15,7 +15,10 @@ test_that("extract_model_results works with contact_data", {
 
   expect_s3_class(result, "tbl_df")
   expect_equal(result$Approach, "Contact interventions")
+  # Just check that Delta is numeric, not the specific value
+  # (the value may differ from published results due to different methods)
   expect_true(is.numeric(result$Delta))
+  expect_true(result$N_studies > 0)
 })
 
 test_that("run_subset_meta_analysis works", {
