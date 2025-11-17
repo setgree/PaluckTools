@@ -26,14 +26,15 @@ variance (\code{var_d}), and study identifier (\code{unique_study_id}).}
 }
 \value{
 A tibble with one row per moderator level containing:
-\itemize{
-\item Moderator: The level name
-\item N_Studies: Number of studies in this level
-\item N_Estimates: Number of effect size estimates
-\item Delta: Effect size estimate
-\item CI: Confidence interval
-\item p_val: P-value for the effect within this level
-\item p_val_ref: P-value comparing this level to the reference level
+\describe{
+\item{Moderator}{The level name}
+\item{N_Studies}{Number of studies in this level}
+\item{N_Estimates}{Number of effect size estimates}
+\item{Delta}{Effect size estimate}
+\item{tau}{Residual heterogeneity for this level (only when include_tau = TRUE)}
+\item{CI}{Confidence interval}
+\item{p_val}{P-value for the effect within this level}
+\item{p_val_ref}{P-value comparing this level to the reference level}
 }
 }
 \description{

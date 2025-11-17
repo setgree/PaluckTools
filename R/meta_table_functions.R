@@ -1,6 +1,7 @@
 # Global variable bindings to avoid R CMD check notes
 utils::globalVariables(c("unique_study_id", "var_d", "Delta", "Moderator",
-                         "p_val", "p_val_ref", "N_Studies", "N_Estimates", "CI"))
+                         "p_val", "p_val_ref", "N_Studies", "N_Estimates", "CI",
+                         "group_var_factor"))
 
 #' Run Subset Meta-Analysis with Flexible Filtering
 #'
@@ -251,13 +252,16 @@ run_meta_regression <- function(data, group_var, ref_level) {
 #' @param include_tau Logical indicating whether to include tau (default: FALSE).
 #'
 #' @return A tibble with one row per moderator level containing:
-#'   - Moderator: The level name
-#'   - N_Studies: Number of studies in this level
-#'   - N_Estimates: Number of effect size estimates
-#'   - Delta: Effect size estimate
-#'   - CI: Confidence interval
-#'   - p_val: P-value for the effect within this level
-#'   - p_val_ref: P-value comparing this level to the reference level
+#' \describe{
+#'   \item{Moderator}{The level name}
+#'   \item{N_Studies}{Number of studies in this level}
+#'   \item{N_Estimates}{Number of effect size estimates}
+#'   \item{Delta}{Effect size estimate}
+#'   \item{tau}{Residual heterogeneity for this level (only when include_tau = TRUE)}
+#'   \item{CI}{Confidence interval}
+#'   \item{p_val}{P-value for the effect within this level}
+#'   \item{p_val_ref}{P-value comparing this level to the reference level}
+#' }
 #'
 #' @family meta-analysis functions
 #' @seealso \code{\link{run_subset_meta_analysis}} for individual subset analysis,

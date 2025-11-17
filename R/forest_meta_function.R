@@ -48,7 +48,7 @@ forest_meta_function <- function(x) {
     theory = if("theory" %in% names(x)) x$theory[1] else NA_character_,
     estimate = as.numeric(result$b),
     se = result$se,
-    var = result$vb,
+    var = as.numeric(result$se^2),  # Scalar variance from SE, not matrix
     ci.lb = result$ci.lb,
     ci.ub = result$ci.ub
   )
