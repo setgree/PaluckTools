@@ -6,7 +6,7 @@ output:
     fig_width: 7
     fig_height: 7
 vignette: >
-  %\VignetteIndexEntry{4. Creating publication-ready tables}
+  %\VignetteIndexEntry{Creating publication-ready tables}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -156,7 +156,7 @@ Create publication-ready tables comparing different analytical approaches:
 full_table <- bind_rows(
   sv_data |> extract_model_results(approach_name = "Overall"),
   sv_data |>
-    filter(study_design == "RCT") |>
+    filter(study_design == "Randomized Controlled Trial") |>
     extract_model_results(approach_name = "RCTs only"),
   sv_data |>
     filter(behavior_type == "Perpetration") |>

@@ -4,7 +4,7 @@ output:
   rmarkdown::html_vignette:
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{2. Performing meta-analysis the Paluck Lab way}
+  %\VignetteIndexEntry{Performing meta-analysis the Paluck Lab way}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
