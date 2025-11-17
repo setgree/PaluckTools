@@ -3,6 +3,8 @@ title: "Creating publication-ready tables"
 output:
   rmarkdown::html_vignette:
     number_sections: true
+    toc: true
+    toc_depth: 3
     fig_width: 7
     fig_height: 7
 vignette: >
@@ -22,12 +24,87 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This vignette demonstrates tools for creating publication-ready tables from both experimental and meta-analytic data. BLPlabtools provides two main categories of table creation functions:
+This vignette demonstrates tools for creating publication-ready tables from both experimental and meta-analytic data. Creating tables for academic publication is a multi-step process that involves running analyses, formatting results, and polishing the final output for LaTeX or Word documents.
+
+## The table creation challenge
+
+When preparing tables for publication, you face several challenges:
+
+- **Consistency**: Ensuring all numbers are formatted to the same precision (e.g., 2 decimal places)
+- **Statistical reporting**: Adding significance stars, confidence intervals, and p-values in standard formats
+- **LaTeX formatting**: Converting R output into properly formatted LaTeX code that compiles correctly
+- **Moderator comparisons**: Creating tables that compare effect sizes across subgroups with reference categories
+- **Iteration**: Making tables that are easy to update when analyses change
+
+Doing all of this manually—copying numbers from R output, formatting in Excel, converting to LaTeX—is error-prone and makes it hard to reproduce your work when you need to update analyses.
+
+## What BLPlabtools provides
+
+BLPlabtools automates this workflow with two main categories of table creation functions:
 
 1. **Meta-analysis moderator tables**: Functions for creating standardized tables showing effect sizes across moderator levels
 2. **LaTeX table formatting utilities**: Functions for polishing tables created with `stargazer` or `knitr::kable()`
 
+## Typical workflow
+
+Here's how table creation typically works with BLPlabtools:
+
+**For meta-analysis tables**:
+1. Use `process_group()` or `extract_model_results()` to run analyses and create a data frame
+2. Use `knitr::kable()` to convert to LaTeX
+3. Use formatting utilities (table_label, print_table, etc.) to polish the output
+4. Save to a .tex file for inclusion in your paper
+
+**For experimental tables**:
+1. Use `tidy_lm()` to run multiple regression specifications
+2. Use `star_ready()` to prepare for stargazer
+3. Use `stargazer()` to create the table
+4. Use formatting utilities (add_endnote, stargazer_rowname, etc.) to customize
+5. Save to a .tex file
+
 We'll cover both types of tables using realistic examples from the built-in datasets.
+
+## Which function should I use?
+
+Here's a quick decision tree to help you choose the right function:
+
+**For meta-analysis tables:**
+
+- **Want a complete moderator table with p-values?** → Use `process_group()`
+  - Creates table comparing moderator levels to a reference
+  - Automatically runs meta-regression for p-values
+  - Best for: Main results tables showing effects by study design, population, etc.
+
+- **Want overall meta-analysis results?** → Use `extract_model_results()`
+  - Returns one row with pooled effect across all studies
+  - Best for: Overall results, combining multiple approaches in one table
+
+- **Want custom filtering or subsets?** → Use `run_subset_meta_analysis()`
+  - Filter by column values or string patterns
+  - More granular control than `process_group()`
+  - Best for: Sensitivity analyses, custom subgroups
+
+**For experimental/regression tables:**
+
+- **Want to run many specifications?** → Use `tidy_lm()`
+  - Run multiple DVs, controls, and styles at once
+  - Returns tidy data frame with all results
+  - Best for: Robustness checks, multiple outcomes
+
+- **Want cluster-robust SEs for one model?** → Use `robust_se()`
+  - Takes an `lm` object and cluster variable
+  - Returns adjusted variance-covariance matrix and coefficient table
+  - Best for: Single models where you need clustered SEs
+
+- **Want to create stargazer tables from tidy_lm?** → Use `star_ready()`
+  - Converts tidy_lm output to format stargazer expects
+  - Best for: Publication tables from multiple specifications
+
+**For table formatting:**
+
+- **Want to format numbers consistently?** → Use `two_digits()`, `add_parentheses()`, `add_brackets()`
+- **Want to customize LaTeX tables?** → Use `table_label()`, `kable_resize()`, `print_table()`
+- **Want to customize stargazer output?** → Use `add_endnote()`, `stargazer_rowname()`, `stargazer_pvalues()`
 
 # Meta-analysis moderator tables
 
@@ -71,6 +148,19 @@ kable(overall)
 
 The `extract_model_results()` function runs `metafor::rma()` with cluster-robust standard errors and extracts key statistics in a clean format: number of studies and estimates, effect size (Delta), standard error, confidence interval, p-value, and tau (residual heterogeneity).
 
+### Understanding the output
+
+This table shows:
+- **Moderator**: "Overall" (pooling all studies)
+- **N_Studies**: 29 unique studies
+- **N_Estimates**: 73 total effect sizes (some studies contribute multiple outcomes)
+- **Delta**: 0.28 (the pooled effect size in standard deviation units)
+- **tau**: 0.36 (residual heterogeneity—variation in effects not explained by sampling error)
+- **CI**: [0.22, 0.34] (95% confidence interval)
+- **p_val**: < 0.001 (highly statistically significant)
+
+This single row could become the "Overall" row in a larger table comparing different analytical approaches or subsets.
+
 ## Creating moderator tables with process_group()
 
 The `process_group()` function creates complete moderator analysis tables with one call. It runs separate meta-analyses for each level of a moderator and adds p-values comparing each level to a reference:
@@ -87,6 +177,8 @@ design_table <- sv_data |>
 kable(design_table)
 ```
 
+### Understanding the output
+
 The output includes:
 - `Moderator`: The level name (Randomized Controlled Trial, Quasi-Experimental, etc.)
 - `N_Studies` and `N_Estimates`: Sample sizes
@@ -97,6 +189,13 @@ The output includes:
 - `p_val_ref`: P-value comparing this level to the reference level (Randomized Controlled Trial)
 
 Notice "ref" for Randomized Controlled Trial's `p_val_ref`—it's the reference level, so other levels are compared to it.
+
+For example, this table shows:
+- **RCTs**: ∆ = 0.32 (17 studies, 37 estimates)
+- **Quasi-Experimental**: ∆ = 0.23 (11 studies, 32 estimates), p_val_ref = 0.156 (not significantly different from RCTs)
+- **Non-Experimental**: ∆ = 0.33 (1 study, 4 estimates), p_val_ref = 0.954 (not significantly different from RCTs)
+
+This tells us that effect sizes don't vary significantly by study design in this dataset—a substantively important finding for interpreting the overall effect.
 
 ## Custom level ordering
 
@@ -258,10 +357,14 @@ table_output |> stargazer_rowname(old_name = "RCT", new_name = "Treatment (RCT)"
 
 # Complete workflow example
 
-Here's a typical workflow for creating publication tables from meta-analytic data:
+Here's a typical workflow for creating publication tables from meta-analytic data, showing the progression from raw output to publication-ready table.
 
-```{r complete_workflow, eval=FALSE}
-# 1. Create moderator table
+## Step-by-step: From data to published table
+
+### Step 1: Create the moderator table
+
+```{r workflow_step1}
+# Run the analysis
 moderator_results <- sv_data |>
   process_group(
     group_var = "study_design",
@@ -269,24 +372,77 @@ moderator_results <- sv_data |>
     include_tau = TRUE
   )
 
-# 2. Format for LaTeX
+# View raw output
+moderator_results
+```
+
+At this stage, you have a data frame with all your results, but it's not formatted for publication.
+
+### Step 2: Basic formatting with kable
+
+```{r workflow_step2}
 library(knitr)
+
+# Convert to markdown table
+kable(moderator_results, digits = 2)
+```
+
+This gives you a nicely formatted table with consistent decimal places, but it's still missing publication elements like table numbers, captions, and cross-references.
+
+### Step 3: Format for LaTeX (for publication)
+
+```{r workflow_step3, eval=FALSE}
+# Create LaTeX table
 latex_table <- kable(
   moderator_results,
   format = "latex",
   caption = "Effect sizes by study design",
-  booktabs = TRUE
+  booktabs = TRUE,
+  digits = 2
 ) |>
   capture.output()
 
-# 3. Add formatting
+# Add cross-reference label for citing in text
 formatted_table <- latex_table |>
-  table_label(caption = "moderator_analysis") |>
-  print_table()
+  table_label(caption = "moderator_analysis")
 
-# 4. Save to file
+# Preview the LaTeX code
+print_table(formatted_table)
+
+# Save to file for inclusion in your paper
 writeLines(formatted_table, "tables/moderator_table.tex")
 ```
+
+### Step 4: Include in your LaTeX document
+
+In your .tex file, you can now write:
+
+```latex
+Table \ref{tab:moderator_analysis} shows effect sizes by study design.
+
+\input{tables/moderator_table.tex}
+```
+
+And the table will appear with proper numbering and cross-referencing.
+
+## Before and after comparison
+
+**Before BLPlabtools**:
+1. Run separate `rma()` calls for each study design manually
+2. Copy-paste coefficients, SEs, p-values from console output
+3. Manually format in Excel or Google Sheets
+4. Convert to LaTeX using online tools or by hand
+5. Debug LaTeX compilation errors
+6. Update everything manually when you need to change analyses
+
+**After BLPlabtools**:
+1. One `process_group()` call runs all analyses
+2. One `kable()` call formats everything consistently
+3. Formatting utilities add publication polish
+4. Save directly to .tex file
+5. Update by re-running the script
+
+This workflow is fully reproducible and makes it easy to update tables when reviewers ask for changes or when you discover data errors.
 
 # Key takeaways
 
