@@ -68,7 +68,7 @@ overall <- sv_data |> extract_model_results(approach_name = "Overall")
 kable(overall)
 ```
 
-The `extract_model_results()` function runs `robumeta::robu` and extracts key statistics in a clean format: number of studies and estimates, effect size (Delta), standard error, confidence interval, p-value, and tau (between-study heterogeneity).
+The `extract_model_results()` function runs `metafor::rma()` with cluster-robust standard errors and extracts key statistics in a clean format: number of studies and estimates, effect size (Delta), standard error, confidence interval, p-value, and tau (residual heterogeneity).
 
 ## Creating moderator tables with process_group()
 
@@ -90,7 +90,7 @@ The output includes:
 - `Moderator`: The level name (RCT, Quasi-experimental, etc.)
 - `N_Studies` and `N_Estimates`: Sample sizes
 - `Delta`: Effect size estimate for this level
-- `tau`: Between-study heterogeneity
+- `tau`: Residual heterogeneity
 - `CI`: Confidence interval
 - `p_val`: P-value testing if this level's effect differs from zero
 - `p_val_ref`: P-value comparing this level to the reference level (RCT)
