@@ -3,6 +3,8 @@ title: "An overview of these vignettes"
 output:
   rmarkdown::html_vignette:
     number_sections: true
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{An overview of these vignettes}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,7 +18,30 @@ knitr::opts_chunk$set(
 )
 ```
 
-## 1 BLPlabtools supports two research workflows.
+# Introduction
+
+BLPlabtools is an R package that automates common tasks in conducting meta-analyses and analyzing experimental data from social psychology research. This package emerged from repeated workflows at the [Betsy Levy Paluck Lab at Princeton University](https://psych.princeton.edu/person/betsy-levy-paluck), where we found ourselves writing the same code over and over for:
+
+- Converting study results into standardized effect sizes
+- Running meta-analyses with cluster-robust standard errors
+- Creating publication-ready tables and figures
+- Running many regression specifications efficiently
+
+This vignette provides an overview of the package and guides you to the right vignette for your needs.
+
+## Quick start: Which vignette do I need?
+
+**I'm conducting a meta-analysis:**
+1. Start with [d-calc vignette](d-calc-vignette.html) → Calculate effect sizes from study results
+2. Then [meta-analysis vignette](meta-analysis-vignette.html) → Pool effect sizes and run moderator analyses
+3. Then [table-formatting vignette](table-formatting-vignette.html) → Create publication tables
+4. Finally [writing-metas vignette](writing-metas-vignette.html) → Create figures and bibliography
+
+**I'm analyzing my own experimental data:**
+1. Start with [experimental-analysis vignette](experimental-analysis-vignette.html) → Run regressions with cluster-robust SEs
+2. Then [table-formatting vignette](table-formatting-vignette.html) → Create publication tables
+
+## 1 BLPlabtools supports two research workflows
 
 BLPlabtools provides functions for two types of analysis:
 
@@ -56,12 +81,78 @@ The [second vignette](meta-analysis-vignette.html) is about **step 5**, how to a
 
 The [third vignette](writing-metas-vignette.html) is about **step 6**, and walks through the other functions we've written to help write a meta-analysis paper. Specifically, it covers `summarise_lm`, `summarise_table`, and `study_count`, as well as a few smaller functions for turning a meta-analytic database into a bibliography and creating ggplot2-based visualizations.
 
-**Vignette 4 covers experimental analysis and table formatting.**
+**Vignette 4 covers experimental analysis.**
 
-If you're analyzing data from your own experiments (not conducting a meta-analysis), the [fourth vignette](experimental-analysis-vignette.html) demonstrates how to use `tidy_lm` for running multiple regression specifications efficiently, `robust_se` for cluster-robust standard errors, and various table formatting utilities for creating publication-ready LaTeX tables.
+If you're analyzing data from your own experiments (not conducting a meta-analysis), the [fourth vignette](experimental-analysis-vignette.html) demonstrates how to use `tidy_lm` for running multiple regression specifications efficiently and `robust_se` for cluster-robust standard errors.
+
+**Vignette 5 covers table formatting.**
+
+The [fifth vignette](table-formatting-vignette.html) shows how to create publication-ready tables for both meta-analyses and experimental data, including LaTeX formatting utilities and moderator comparison tables.
+
+## 3 What you'll learn in each vignette
+
+### Vignette 1: Effect size calculation
+
+**Core functions**: `d_calc()`, `var_d_calc()`, `d_to_g()`
+
+**What you'll learn**:
+- Convert means and standard deviations into Cohen's d or Glass's ∆
+- Calculate variance and standard errors for meta-analysis
+- Handle edge cases (unequal sample sizes, missing control groups, multiple outcomes)
+- Work with different study designs (between-subjects, within-subjects, regression coefficients)
+
+**Example use case**: You have a study reporting "Treatment group mean = 75 (SD = 12, n = 50), Control group mean = 70 (SD = 10, n = 48)". You need to convert this into a standardized effect size for meta-analysis.
+
+### Vignette 2: Running meta-analyses
+
+**Core functions**: `map_robust()`, `process_group()`, `extract_model_results()`
+
+**What you'll learn**:
+- Pool effect sizes across studies with cluster-robust standard errors
+- Run moderator analyses (effects by study design, population, outcome type)
+- Create subgroup comparisons with p-values
+- Understand heterogeneity (I² statistics)
+
+**Example use case**: You have 295 effect sizes from 100 studies. You want to know: (1) the overall pooled effect, (2) whether effects differ by study design (RCT vs. quasi-experimental), and (3) whether effects are larger for attitudes vs. behaviors.
+
+### Vignette 3: Writing your meta-analysis paper
+
+**Core functions**: `make_bib()`, `study_count()`, `summarise_lm()`, forest plot code
+
+**What you'll learn**:
+- Generate BibTeX files from DOIs automatically
+- Create forest plots with color-coded study characteristics
+- Test for publication bias visually
+- Generate descriptive statistics about your dataset
+
+**Example use case**: You're writing up your meta-analysis and need to create Figure 1 (forest plot) and generate a .bib file for all 295 studies without manually entering each citation.
+
+### Vignette 4: Experimental data analysis
+
+**Core functions**: `tidy_lm()`, `robust_se()`, `star_ready()`
+
+**What you'll learn**:
+- Run multiple regression specifications efficiently (different DVs, different controls)
+- Calculate cluster-robust standard errors for nested data
+- Extract treatment effects across dozens of models automatically
+- Prepare results for publication tables with stargazer
+
+**Example use case**: You ran an experiment with 2,000 students across 20 schools. You need to test the treatment effect on 3 outcomes (test scores, attendance, attitudes), with and without controls, and account for clustering by school.
+
+### Vignette 5: Table formatting
+
+**Core functions**: `process_group()`, `two_digits()`, `table_label()`, `add_endnote()`
+
+**What you'll learn**:
+- Create moderator comparison tables for meta-analyses
+- Format numbers consistently (decimal places, parentheses, brackets)
+- Add LaTeX labels and cross-references
+- Customize stargazer output (footnotes, row names, p-value formats)
+
+**Example use case**: You need to create Table 2 showing effect sizes by study design (with p-values comparing each design to RCTs as reference), formatted for LaTeX submission to a journal.
 
 ## Next up
 
-**Conducting a meta-analysis?** → [Converting a study's results into SMD, variance, and standard error](d-calc-vignette.html).
+**Conducting a meta-analysis?** → [Converting a study's results into SMD, variance, and standard error](d-calc-vignette.html)
 
-**Analyzing experimental data?** → [Experimental analysis and table formatting](experimental-analysis-vignette.html).
+**Analyzing experimental data?** → [Experimental analysis and table formatting](experimental-analysis-vignette.html)
