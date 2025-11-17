@@ -3,6 +3,8 @@ title: "An overview of these vignettes"
 output:
   rmarkdown::html_vignette:
     number_sections: true
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{An overview of these vignettes}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,7 +18,30 @@ knitr::opts_chunk$set(
 )
 ```
 
-## 1 BLPlabtools supports two research workflows.
+# Introduction
+
+BLPlabtools is an R package that automates common tasks in conducting meta-analyses and analyzing experimental data from social psychology research. This package emerged from repeated workflows at the [Betsy Levy Paluck Lab at Princeton University](https://psych.princeton.edu/person/betsy-levy-paluck), where we found ourselves writing the same code over and over for:
+
+- Converting study results into standardized effect sizes
+- Running meta-analyses with cluster-robust standard errors
+- Creating publication-ready tables and figures
+- Running many regression specifications efficiently
+
+This vignette provides an overview of the package and guides you to the right vignette for your needs.
+
+## Quick start: Which vignette do I need?
+
+**I'm conducting a meta-analysis:**
+1. Start with [d-calc vignette](d-calc-vignette.html) → Calculate effect sizes from study results
+2. Then [meta-analysis vignette](meta-analysis-vignette.html) → Pool effect sizes and run moderator analyses
+3. Then [table-formatting vignette](table-formatting-vignette.html) → Create publication tables
+4. Finally [writing-metas vignette](writing-metas-vignette.html) → Create figures and bibliography
+
+**I'm analyzing my own experimental data:**
+1. Start with [experimental-analysis vignette](experimental-analysis-vignette.html) → Run regressions with cluster-robust SEs
+2. Then [table-formatting vignette](table-formatting-vignette.html) → Create publication tables
+
+## 1 BLPlabtools supports two research workflows
 
 BLPlabtools provides functions for two types of analysis:
 
@@ -56,12 +81,16 @@ The [second vignette](meta-analysis-vignette.html) is about **step 5**, how to a
 
 The [third vignette](writing-metas-vignette.html) is about **step 6**, and walks through the other functions we've written to help write a meta-analysis paper. Specifically, it covers `summarise_lm`, `summarise_table`, and `study_count`, as well as a few smaller functions for turning a meta-analytic database into a bibliography and creating ggplot2-based visualizations.
 
-**Vignette 4 covers experimental analysis and table formatting.**
+**Vignette 4 covers experimental analysis.**
 
-If you're analyzing data from your own experiments (not conducting a meta-analysis), the [fourth vignette](experimental-analysis-vignette.html) demonstrates how to use `tidy_lm` for running multiple regression specifications efficiently, `robust_se` for cluster-robust standard errors, and various table formatting utilities for creating publication-ready LaTeX tables.
+If you're analyzing data from your own experiments (not conducting a meta-analysis), the [fourth vignette](experimental-analysis-vignette.html) demonstrates how to use `tidy_lm` for running multiple regression specifications efficiently and `robust_se` for cluster-robust standard errors.
+
+**Vignette 5 covers table formatting.**
+
+The [fifth vignette](table-formatting-vignette.html) shows how to create publication-ready tables for both meta-analyses and experimental data, including LaTeX formatting utilities and moderator comparison tables.
 
 ## Next up
 
-**Conducting a meta-analysis?** → [Converting a study's results into SMD, variance, and standard error](d-calc-vignette.html).
+**Conducting a meta-analysis?** → [Converting a study's results into SMD, variance, and standard error](d-calc-vignette.html)
 
-**Analyzing experimental data?** → [Experimental analysis and table formatting](experimental-analysis-vignette.html).
+**Analyzing experimental data?** → [Experimental analysis and table formatting](experimental-analysis-vignette.html)
