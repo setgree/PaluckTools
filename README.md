@@ -30,14 +30,8 @@ This package integrates functions from three sources:
 ## Installation
 
 ``` r
-# Install with vignettes (recommended)
 remotes::install_github('setgree/BLPlabtools', build_vignettes = TRUE)
-
-# Or install a specific release version
-remotes::install_github('setgree/BLPlabtools@v0.2.0', build_vignettes = TRUE)
 ```
-
-**Note**: The `build_vignettes = TRUE` flag is required to include the comprehensive documentation vignettes.
 
 ## What you’ll find
 

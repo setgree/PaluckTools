@@ -135,13 +135,13 @@ kable(rct_only)
 You can also filter by string patterns:
 
 ```{r string_filter}
-# Analyze studies with "college" in population
+# Analyze studies with "college" in setting
 college_studies <- sv_data |>
   run_subset_meta_analysis(
-    filter_column = "population",
+    filter_column = "setting",
     filter_string = "college",
     str_detect_flag = TRUE,
-    approach_name = "College students"
+    approach_name = "College settings"
   )
 
 kable(college_studies)
