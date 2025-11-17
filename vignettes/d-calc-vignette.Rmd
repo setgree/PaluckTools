@@ -2,6 +2,7 @@
 title: "Converting a study's results into SMD, variance, and standard error"
 output:
   rmarkdown::html_vignette:
+    number_sections: true
     toc: true
     toc_depth: 4
 vignette: >
