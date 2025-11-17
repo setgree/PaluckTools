@@ -4,7 +4,7 @@ output:
   rmarkdown::html_vignette:
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{0. An overview of these vignettes}
+  %\VignetteIndexEntry{An overview of these vignettes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -6,10 +6,10 @@ output:
     fig_width: 7
     fig_height: 7
 vignette: >
-  %\VignetteIndexEntry{3. Writing your meta-analytic paper}
+  %\VignetteIndexEntry{Writing your meta-analytic paper}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
