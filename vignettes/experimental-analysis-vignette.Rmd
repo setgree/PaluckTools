@@ -1,11 +1,12 @@
 ---
-title: "Experimental analysis and table formatting"
+title: "Analyzing experimental data"
 output:
   rmarkdown::html_vignette:
+    number_sections: true
     fig_width: 7
     fig_height: 7
 vignette: >
-  %\VignetteIndexEntry{4. Experimental analysis and table formatting}
+  %\VignetteIndexEntry{5. Analyzing experimental data}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -19,25 +20,24 @@ knitr::opts_chunk$set(
 )
 ```
 
-## 1 Introduction
+# Introduction
 
-This vignette demonstrates tools for analyzing experimental data and creating publication-ready tables. While the previous vignettes focused on meta-analysis, this one covers the experimental analysis workflow using functions designed to streamline common tasks in social psychology research.
+This vignette demonstrates tools for analyzing experimental data. While the previous vignettes focused on meta-analysis, this one covers the experimental analysis workflow using functions designed to streamline common tasks in social psychology research.
 
 When you analyze experimental data, you often need to:
 
 - Run many regression specifications (different dependent variables, different sets of controls, different subsamples)
 - Account for clustering in your standard errors (students within schools, voters within precincts)
-- Create publication-ready tables with proper formatting
+- Extract and report treatment effects efficiently
 
-BLPlabtools provides three main categories of functions to help with these tasks:
+BLPlabtools provides two main categories of functions to help with these tasks:
 
 1. **`tidy_lm`** for running multiple regression specifications efficiently
 2. **`robust_se`** for cluster-robust standard errors
-3. **Table formatting utilities** for creating publication-ready LaTeX tables
 
-This vignette walks through each of these tools using realistic simulated data from a growth mindset intervention study.
+This vignette walks through each of these tools using realistic simulated data from a growth mindset intervention study. For information on creating publication-ready tables from your results, see the "Creating publication-ready tables" vignette.
 
-## 2 Example data: Growth mindset intervention
+# Example data: Growth mindset intervention
 
 For realistic examples, we'll create a simulated dataset from a typical social psychology experiment. Imagine a study testing whether a growth mindset intervention improves student outcomes across 20 schools (100 students per school).
 
@@ -83,7 +83,7 @@ This dataset has:
 - **Baseline covariate**: prior test scores, gender
 - **Outcomes**: test scores, attendance rate, attitude scale (1-5)
 
-### What your experimental data should look like
+## What your experimental data should look like
 
 For experimental analysis with `tidy_lm` and `robust_se`, your data should be in "long" format with one row per observation (student, participant, unit). Here's what you need:
 
@@ -108,11 +108,11 @@ This is the standard format for data analysis in R. If your data are in wide for
 
 **A note on clustering**: If your experimental units are nested (students within schools, voters within precincts), you should account for this by specifying the `clusters` parameter in `tidy_lm` or using `robust_se` directly. This adjusts standard errors to account for within-cluster correlation and prevents false precision in your estimates.
 
-## 3 Running multiple regressions with `tidy_lm`
+# Running multiple regressions with `tidy_lm`
 
 When analyzing experimental data, you often need to run many regression specifications: different dependent variables, different sets of controls, different subsamples. The `tidy_lm` function streamlines this process by allowing you to specify multiple models at once and returning the results in a tidy data frame format.
 
-### 3.1 Basic usage
+## Basic usage
 
 Test whether the treatment affects test scores:
 
@@ -131,7 +131,7 @@ results |> select(dv, treatmentTreatment_coef, treatmentTreatment_p)
 
 The output is a tidy data frame where each row represents one regression model. The `treatment` parameter extracts coefficients automatically.
 
-### 3.2 Multiple dependent variables
+## Multiple dependent variables
 
 Test treatment effects across all outcomes simultaneously:
 
@@ -148,7 +148,7 @@ multi_outcome <- tidy_lm(
 multi_outcome |> select(dv, treatmentTreatment_coef, treatmentTreatment_p)
 ```
 
-### 3.3 Different regression styles
+## Different regression styles
 
 Control for baseline covariates in different ways:
 
@@ -184,7 +184,7 @@ cat("Incremental:", nrow(incremental), "models (adds controls one at a time)\n")
 cat("Default:", nrow(full_model), "model (all controls together)\n")
 ```
 
-### 3.4 Real-world workflow: Multiple outcomes with controls
+## Real-world workflow: Multiple outcomes with controls
 
 A typical analysis tests treatment effects on multiple outcomes, with and without controls:
 
@@ -205,11 +205,11 @@ full_analysis |>
   mutate(significant = treatmentTreatment_p < 0.05)
 ```
 
-## 4 Cluster-robust standard errors
+# Cluster-robust standard errors
 
 Our students are clustered within schools, so we need cluster-robust standard errors to account for within-school correlation. Why does this matter? When observations are clustered (students within schools, voters within precincts), the usual assumption that observations are independent is violated. Students in the same school might be more similar to each other than to students in other schools, which means the standard errors from ordinary regression will be too small, leading to overconfident conclusions.
 
-### 4.1 Using `robust_se`
+## Using `robust_se`
 
 ```{r robust_se}
 # Basic regression (ignores clustering)
@@ -227,7 +227,7 @@ robust_results[[2]]
 
 Notice the standard errors are typically larger than classical SEs, reflecting within-cluster correlation.
 
-### 4.2 Incorporating clusters into `tidy_lm`
+## Incorporating clusters into `tidy_lm`
 
 For multiple specifications with clustering, use `tidy_lm` directly:
 
@@ -247,11 +247,9 @@ clustered_models |>
   select(dv, model_number, treatmentTreatment_coef, treatmentTreatment_se, treatmentTreatment_p)
 ```
 
-## 5 Preparing tables for publication
+# Preparing results for publication
 
-### 5.1 Using `star_ready` with stargazer
-
-The `star_ready` function prepares `tidy_lm` output for use with the `stargazer` package:
+Once you've run your analyses, you'll want to create publication-ready tables. The `star_ready()` function prepares `tidy_lm` output for use with the `stargazer` package:
 
 ```{r star_ready_demo, eval=FALSE}
 # First, run your models
@@ -259,138 +257,21 @@ models <- tidy_lm(
   data = experiment_data,
   dv = "test_score",
   terms = c("treatment", "baseline_score"),
-  style = "incremental"
+  style = "incremental",
+  clusters = "school_id"
 )
 
 # Prepare for stargazer
 ready_for_table <- star_ready(models, data = experiment_data)
 
-# Now use with stargazer (not run here to avoid LaTeX output)
-# library(stargazer)
-# stargazer(ready_for_table, type = "latex")
-```
-
-### 5.2 Table formatting utilities
-
-The package includes 14 utility functions for formatting LaTeX tables. These functions work with LaTeX output captured via `capture.output()` from packages like `stargazer` or `knitr::kable()`.
-
-#### Basic number and text formatting
-
-Format numbers and add brackets/parentheses:
-
-```{r table_utilities}
-# Format numbers consistently to 2 decimal places
-values <- c(0.1543, 2.567, 10.2)
-two_digits(values)
-
-# Add parentheses (useful for standard errors in tables)
-add_parentheses(two_digits(values))
-
-# Add brackets [useful for confidence intervals]
-add_brackets(two_digits(values))
-```
-
-**Other basic formatting functions:**
-- `word_italicize()`: Italicize specific words in LaTeX output
-
-#### Working with data frames
-
-When preparing data for tables:
-
-- `add_top_row()`: Add a row to the top of a data frame
-- `add_bottom_row()`: Add a row to the bottom of a data frame
-- `nothing()`: Does nothing—useful as a placeholder at the end of pipe chains
-
-#### LaTeX table structure and display
-
-```{r print_table, eval=FALSE}
-# Display LaTeX tables cleanly in R console
-library(knitr)
-my_table <- capture.output(kable(head(experiment_data), format = "latex"))
-print_table(my_table)  # Cleaner than cat()
-```
-
-**Other structural functions:**
-- `table_label()`: Add LaTeX labels for cross-referencing (e.g., `\ref{tab:results}`)
-- `table_numbers()`: Customize table numbering (e.g., "Table 2a", "Table 2b")
-- `kable_resize()`: Adjust table size in LaTeX documents
-
-#### Stargazer-specific formatting
-
-Customize stargazer output after creating tables:
-
-```{r stargazer_pvalues, eval=FALSE}
-# Capture stargazer output
-model <- lm(test_score ~ treatment, data = experiment_data)
-table_output <- capture.output(
-  stargazer(model, report = "csp", type = "latex")
-)
-
-# Change p-value format from "p = 0.05" to [0.05]
-table_with_brackets <- stargazer_pvalues(table_output, "brackets")
-print_table(table_with_brackets)
-```
-
-**Other stargazer functions:**
-- `add_endnote()`: Replace stargazer's default notes with custom footnotes
-- `stargazer_rowname()`: Customize row names in stargazer tables
-
-### 5.3 Typical workflow for publication-ready tables
-
-Most users will need only a few of these functions. A typical workflow:
-
-1. **Create your table** with `stargazer()` or `kable()` and capture output
-2. **Format p-values** if needed with `stargazer_pvalues()`
-3. **Add footnotes** with `add_endnote()`
-4. **Add labels** with `table_label()` for cross-referencing
-5. **Preview** with `print_table()` before writing to file
-
-For complete documentation of all formatting functions, see `?table_prep`.
-
-## 6 Putting it all together
-
-Here's a complete workflow from analysis to publication-ready table:
-
-```{r complete_workflow, eval=FALSE}
-# 1. Run your regressions
-models <- tidy_lm(
-  data = experiment_data,
-  dv = c("test_score", "attendance"),
-  terms = c("treatment", "baseline_score", "gender"),
-  treatment = "treatment",
-  style = "incremental",
-  clusters = school_id
-)
-
-# 2. Prepare for stargazer
-table_ready <- star_ready(models, data = experiment_data)
-
-# 3. Create table
+# Now use with stargazer
 library(stargazer)
-raw_table <- capture.output(
-  stargazer(
-    table_ready,
-    type = "latex",
-    title = "Effect of growth mindset intervention on student outcomes",
-    dep.var.labels = c("Test Score", "Attendance"),
-    notes = "Placeholder note text"
-  )
-)
-
-# 4. Format the table
-formatted_table <- raw_table |>
-  add_endnote(
-    note = "Standard errors clustered by school. All models control for baseline scores and gender.",
-    size_in_inches = 6,
-    rm.stargazer.stars = TRUE
-  ) |>
-  table_label(caption = "main_results")
-
-# 5. Print for LaTeX document
-print_table(formatted_table)
+stargazer(ready_for_table, type = "latex")
 ```
 
-## 7 Key takeaways
+For detailed information on formatting tables (adding footnotes, adjusting p-value display, resizing, etc.), see the "Creating publication-ready tables" vignette.
+
+# Key takeaways
 
 **For running regressions:**
 - Use `tidy_lm` when you need to run many specifications
@@ -398,16 +279,13 @@ print_table(formatted_table)
 - Use `clusters` for cluster-robust standard errors
 - Choose `style` based on your needs (bivariate, incremental, default)
 
-**For creating tables:**
+**For preparing tables:**
 - `star_ready` bridges `tidy_lm` output to `stargazer`
-- Table formatting functions help polish LaTeX output
-- `print_table` makes viewing LaTeX tables easier
-- Combine functions with pipes for clean workflows
+- See the "Creating publication-ready tables" vignette for formatting options
 
 **Best practices:**
 - Always cluster standard errors when you have grouped data
-- Use consistent number formatting (`two_digits`) across tables
-- Add descriptive notes and labels for reproducibility
-- Test table formatting in your LaTeX document early
+- Run robustness checks with different specifications
+- Document your analytical choices clearly
 
-For more examples, see the function documentation with `?tidy_lm`, `?star_ready`, or `?table_prep`.
+For more examples, see the function documentation with `?tidy_lm`, `?robust_se`, or `?star_ready`.

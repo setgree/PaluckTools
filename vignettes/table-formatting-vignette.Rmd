@@ -1,0 +1,313 @@
+---
+title: "Creating publication-ready tables"
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
+    fig_width: 7
+    fig_height: 7
+vignette: >
+  %\VignetteIndexEntry{4. Creating publication-ready tables}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options:
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+This vignette demonstrates tools for creating publication-ready tables from both experimental and meta-analytic data. BLPlabtools provides two main categories of table creation functions:
+
+1. **Meta-analysis moderator tables**: Functions for creating standardized tables showing effect sizes across moderator levels
+2. **LaTeX table formatting utilities**: Functions for polishing tables created with `stargazer` or `knitr::kable()`
+
+We'll cover both types of tables using realistic examples from the built-in datasets.
+
+# Meta-analysis moderator tables
+
+When conducting meta-analyses, you often need to create tables showing how effect sizes vary across moderator variables (study design, intervention type, population characteristics, etc.). BLPlabtools provides a suite of functions to automate this process:
+
+- `process_group()`: Create complete moderator tables with one function (high-level)
+- `extract_model_results()`: Extract overall meta-analysis results
+- `run_subset_meta_analysis()`: Run meta-analysis on data subsets (for custom filtering)
+
+**Note:** `process_group()` internally uses `run_meta_regression()` to generate p-values comparing moderator levels. You rarely need to call `run_meta_regression()` directly.
+
+## Example data: Sexual violence interventions
+
+We'll use the built-in `sv_data` dataset, which contains effect sizes from interventions to prevent sexual violence:
+
+```{r load_data}
+library(BLPlabtools)
+library(dplyr)
+library(knitr)
+
+# Preview the data
+sv_data |>
+  select(unique_study_id, author, year, study_design, behavior_type, d, var_d) |>
+  head()
+```
+
+This dataset includes:
+- **73 effect sizes** from **29 unique studies**
+- Moderators: `study_design`, `behavior_type`, `population`
+- Effect sizes: Cohen's d (`d`) and variance (`var_d`)
+
+## Overall meta-analysis results
+
+Start by extracting overall results across all studies:
+
+```{r overall_results}
+# Overall effect across all studies
+overall <- sv_data |> extract_model_results(approach_name = "Overall")
+kable(overall)
+```
+
+The `extract_model_results()` function runs `metafor::rma()` with cluster-robust standard errors and extracts key statistics in a clean format: number of studies and estimates, effect size (Delta), standard error, confidence interval, p-value, and tau (residual heterogeneity).
+
+## Creating moderator tables with process_group()
+
+The `process_group()` function creates complete moderator analysis tables with one call. It runs separate meta-analyses for each level of a moderator and adds p-values comparing each level to a reference:
+
+```{r study_design_table}
+# Create moderator table for study design
+design_table <- sv_data |>
+  process_group(
+    group_var = "study_design",
+    ref_level = "Randomized Controlled Trial",
+    include_tau = TRUE
+  )
+
+kable(design_table)
+```
+
+The output includes:
+- `Moderator`: The level name (Randomized Controlled Trial, Quasi-Experimental, etc.)
+- `N_Studies` and `N_Estimates`: Sample sizes
+- `Delta`: Effect size estimate for this level
+- `tau`: Residual heterogeneity
+- `CI`: Confidence interval
+- `p_val`: P-value testing if this level's effect differs from zero
+- `p_val_ref`: P-value comparing this level to the reference level (Randomized Controlled Trial)
+
+Notice "ref" for Randomized Controlled Trial's `p_val_ref`—it's the reference level, so other levels are compared to it.
+
+## Custom level ordering
+
+Control the order of moderator levels in the output:
+
+```{r custom_order}
+# Custom ordering for behavior type
+behavior_table <- sv_data |>
+  process_group(
+    group_var = "behavior_type",
+    ref_level = "Ideas",
+    order_levels = c("Ideas", "Perpetration", "Victimization", "Bystander", "Involvement"),
+    include_tau = FALSE
+  )
+
+kable(behavior_table)
+```
+
+## Manual subset analysis
+
+For more control, use `run_subset_meta_analysis()` directly:
+
+```{r manual_subset}
+# Analyze just RCTs
+rct_only <- sv_data |>
+  run_subset_meta_analysis(
+    group_var = "study_design",
+    level = "Randomized Controlled Trial",
+    approach_name = "RCTs only",
+    include_tau = TRUE
+  )
+
+kable(rct_only)
+```
+
+You can also filter by string patterns:
+
+```{r string_filter}
+# Analyze studies with "college" in population
+college_studies <- sv_data |>
+  run_subset_meta_analysis(
+    filter_column = "population",
+    filter_string = "college",
+    str_detect_flag = TRUE,
+    approach_name = "College students"
+  )
+
+kable(college_studies)
+```
+
+## Combining multiple approaches
+
+Create publication-ready tables comparing different analytical approaches:
+
+```{r combined_table}
+# Combine overall + moderator analyses
+full_table <- bind_rows(
+  sv_data |> extract_model_results(approach_name = "Overall"),
+  sv_data |>
+    filter(study_design == "RCT") |>
+    extract_model_results(approach_name = "RCTs only"),
+  sv_data |>
+    filter(behavior_type == "Perpetration") |>
+    extract_model_results(approach_name = "Perpetration outcomes")
+)
+
+kable(full_table)
+```
+
+# Experimental data table formatting
+
+For experimental data, BLPlabtools provides utilities to format LaTeX tables created with `stargazer` or `knitr::kable()`. These functions work by manipulating captured LaTeX output as text.
+
+## Basic number and text formatting
+
+Format numbers consistently across tables:
+
+```{r number_formatting}
+# Format to 2 decimal places
+values <- c(0.1543, 2.567, 10.2)
+two_digits(values)
+
+# Add parentheses (for standard errors)
+add_parentheses(two_digits(values))
+
+# Add brackets (for confidence intervals)
+add_brackets(two_digits(values))
+```
+
+**Other formatting functions:**
+- `word_italicize()`: Italicize specific words in LaTeX output
+
+## Working with data frames
+
+Utilities for adding rows to tables:
+
+```{r dataframe_utils, eval=FALSE}
+# Add header row
+my_table |> add_top_row(c("Model 1", "Model 2", "Model 3"))
+
+# Add footer row
+my_table |> add_bottom_row(c("Note: All models include controls"))
+
+# Placeholder for pipe chains
+my_table |>
+  some_operation() |>
+  nothing()  # Does nothing, useful at end of chains
+```
+
+## LaTeX table utilities
+
+Functions for working with captured LaTeX output:
+
+```{r latex_utils, eval=FALSE}
+# Capture table output
+my_table <- capture.output(kable(head(sv_data), format = "latex"))
+
+# Display cleanly in console
+print_table(my_table)
+
+# Add cross-reference label
+my_table |> table_label(caption = "sv_results")
+
+# Customize table numbering
+my_table |> table_numbers(table_number = "2a")
+
+# Resize table
+my_table |> kable_resize(size_in_inches = 5)
+```
+
+## Stargazer-specific formatting
+
+Customize `stargazer` output:
+
+```{r stargazer_format, eval=FALSE}
+library(stargazer)
+
+# Create example regression
+model <- lm(d ~ as.numeric(study_design == "RCT"), data = sv_data)
+
+# Capture stargazer output
+table_output <- capture.output(
+  stargazer(model, type = "latex", report = "csp")
+)
+
+# Change p-value format to brackets
+table_output |> stargazer_pvalues("brackets")
+
+# Add custom footnote
+table_output |> add_endnote(
+  note = "Standard errors clustered by study. Controls included.",
+  size_in_inches = 6,
+  rm.stargazer.stars = TRUE
+)
+
+# Customize row names
+table_output |> stargazer_rowname(old_name = "RCT", new_name = "Treatment (RCT)")
+```
+
+# Complete workflow example
+
+Here's a typical workflow for creating publication tables from meta-analytic data:
+
+```{r complete_workflow, eval=FALSE}
+# 1. Create moderator table
+moderator_results <- sv_data |>
+  process_group(
+    group_var = "study_design",
+    ref_level = "Randomized Controlled Trial",
+    include_tau = TRUE
+  )
+
+# 2. Format for LaTeX
+library(knitr)
+latex_table <- kable(
+  moderator_results,
+  format = "latex",
+  caption = "Effect sizes by study design",
+  booktabs = TRUE
+) |>
+  capture.output()
+
+# 3. Add formatting
+formatted_table <- latex_table |>
+  table_label(caption = "moderator_analysis") |>
+  print_table()
+
+# 4. Save to file
+writeLines(formatted_table, "tables/moderator_table.tex")
+```
+
+# Key takeaways
+
+**For meta-analysis tables:**
+- Use `process_group()` for complete moderator tables with one call
+- Use `extract_model_results()` for overall results or combining approaches
+- Use `run_subset_meta_analysis()` for custom filtering and granular control
+- Always specify a reference level for meta-regression comparisons
+
+**For table formatting:**
+- Capture LaTeX output with `capture.output()`
+- Use `print_table()` to preview in console
+- Combine formatting functions with pipes
+- Add `table_label()` for cross-referencing in LaTeX documents
+
+**Best practices:**
+- Use consistent number formatting (e.g., `two_digits`) across all tables
+- Include descriptive notes explaining moderator coding and analytical choices
+- Test table rendering in your LaTeX document early
+- Keep tau in moderator tables when between-study heterogeneity is important
+
+For complete function documentation, see:
+- Meta-analysis: `?process_group`, `?run_subset_meta_analysis`, `?extract_model_results`
+- Formatting: `?table_prep`, `?star_ready`

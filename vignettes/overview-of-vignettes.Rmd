@@ -1,6 +1,8 @@
 ---
 title: "An overview of these vignettes"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{0. An overview of these vignettes}
   %\VignetteEngine{knitr::rmarkdown}

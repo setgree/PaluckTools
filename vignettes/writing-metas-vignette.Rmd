@@ -2,6 +2,7 @@
 title: "Writing your meta-analytic paper"
 output:
   rmarkdown::html_vignette:
+    number_sections: true
     fig_width: 7
     fig_height: 7
 vignette: >
