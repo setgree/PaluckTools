@@ -76,14 +76,17 @@ variance <- var_d_calc(d = d, n_t = 21, n_c = 21)
 
 ``` r
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 
-# Use built-in contact hypothesis data
-contact_data |>
-  map_robust() |>
-  print()
-
-# Shows: pooled effect = 0.29, SE = 0.09, CI, heterogeneity stats
+# Use built-in sexual violence prevention data
+sv_data |> map_robust() 
+```
+This prints:
+```
+# A tibble: 1 × 5
+  N_observations N_studies Delta     se pval     
+           <int>     <int> <dbl>  <dbl> <noquote>
+1            489       295 0.283 0.0251 <.0001   
 ```
 
 ### Calculate cluster-robust standard errors
@@ -93,17 +96,11 @@ library(BLPlabtools)
 library(broom)
 data(contact_data)
 
-# Run a regression
+# basic model:
 model <- lm(d ~ days_delay + publish, data = contact_data)
 
-# Add cluster-robust SEs by unique_study_id
-robust_results <- robust_se(model, cluster = contact_data$unique_study_id)
-
-# View as a formatted table
-robust_results[[2]]  # Print coefficient table with cluster-robust SEs
-
-# Or convert to a tidy data frame
-broom::tidy(robust_results[[2]])
+# Add cluster-robust SEs by unique_study_id and
+robust_se(model, cluster = contact_data$unique_study_id)[[2]] 
 ```
 
 ## The functions
