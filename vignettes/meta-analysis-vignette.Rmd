@@ -3,6 +3,8 @@ title: "Performing meta-analysis the Paluck Lab way"
 output:
   rmarkdown::html_vignette:
     number_sections: true
+    toc: true
+    toc_depth: 3
 vignette: >
   %\VignetteIndexEntry{Performing meta-analysis the Paluck Lab way}
   %\VignetteEncoding{UTF-8}
@@ -18,9 +20,68 @@ knitr::opts_chunk$set(
 )
 ```
 
-Now that we [have our vectors of ∆, variance, and standard errors for each paper](d-calc-vignette.html), it's time to perform a meta-analysis, i.e. the statistical procedure by which the results of many studies are pooled. 
+# Introduction
 
-The main function in this vignette is called `map_robust`. We'll demonstrate how to use it with our built-in datasets, primarily `sv_data`. This is the dataset for "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)". (We'll also use `contact_data` from "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)" for a few examples.)
+Now that we [have our vectors of ∆, variance, and standard errors for each paper](d-calc-vignette.html), it's time to perform a meta-analysis—the statistical procedure by which we combine results from multiple studies to estimate an overall effect.
+
+## What is meta-analysis?
+
+**Meta-analysis** pools effect sizes across studies to answer: "What is the average effect of this intervention/phenomenon across all available evidence?" Instead of relying on a single study's estimate, we synthesize many studies' results, weighted by their precision (studies with larger samples get more weight).
+
+**Why meta-analysis matters:**
+
+- **Increased statistical power**: Combining studies gives us more precise estimates than any single study
+- **Generalizability**: We can see if effects hold across different populations, settings, and methods
+- **Moderator analysis**: We can test whether effects vary by study characteristics (design, population, intervention type, etc.)
+
+## Why clustering matters
+
+A key challenge in meta-analysis is that **effect sizes from the same study are not independent**. If a study reports results for multiple outcomes or subgroups, those estimates share:
+
+- The same participants
+- The same research team and methods
+- The same setting and time period
+
+**Cluster-robust standard errors** account for this dependence by treating all effect sizes from the same study as a "cluster." This gives us accurate standard errors and prevents us from over-stating our precision.
+
+For example, if a study reports effects on both attitudes and behavior, those two effect sizes are correlated—they come from the same intervention affecting the same people. Without clustering, we'd incorrectly treat them as independent, leading to overly narrow confidence intervals.
+
+## What this vignette covers
+
+The main function in this vignette is `map_robust()`. We'll demonstrate how to use it with our built-in datasets:
+
+- **`sv_data`**: From "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)"
+- **`contact_data`**: From "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)"
+
+## What your data should look like
+
+Before running meta-analyses, your dataset should have these essential columns:
+
+```{r preview_sv_data, echo=FALSE}
+library(BLPlabtools)
+library(dplyr)
+library(knitr)
+
+# Show structure of meta-analysis data
+sv_data |>
+  select(unique_study_id, author, year, behavior_type, d, var_d, se_d) |>
+  head(5) |>
+  kable()
+```
+
+**Required columns:**
+
+- **`d`**: Standardized mean difference (Cohen's d or Glass's ∆) for each effect size
+- **`var_d`**: Variance of the effect size
+- **`unique_study_id`**: Numeric identifier grouping all effects from the same study (for clustering)
+
+**Recommended columns:**
+
+- **`se_d`**: Standard error (square root of `var_d`)—some functions may use this
+- **`author`** and **`year`**: Study identifiers for your records
+- **Moderator variables**: Any variables you'll use for subgroup analyses (e.g., `behavior_type`, `study_design`, `population`)
+
+If your data is structured this way (which you should have after following the [d-calc vignette](d-calc-vignette.html)), you're ready to run meta-analyses.
 
 ## 1 The easy case: combining all estimates into a single pooled effect size
 
@@ -33,7 +94,22 @@ library(BLPlabtools)
 sv_data |> map_robust()
 ```
 
-This is equivalent to running the following:
+This output tells us:
+
+- **N_studies = 295**: We have 295 unique studies
+- **N_estimates = 489**: Those studies contribute 489 total effect sizes (some studies report multiple outcomes)
+- **Delta = 0.28**: The average effect size across all studies is 0.28 standard deviations
+- **se = 0.03**: The standard error of this pooled estimate
+- **pval < 2e-16**: The effect is highly statistically significant
+- **I2 = 94.19%**: High heterogeneity—effect sizes vary substantially across studies
+
+### Understanding the output
+
+In a published meta-analysis, this overall pooled effect becomes your main finding. For example, in the Contact Hypothesis paper, we reported an overall effect size similar to this in our main results table:
+
+![Main results from Contact Hypothesis meta-analysis](images/contact-main-results.png)
+
+This is equivalent to running the following metafor code:
 ```{r robust_rma}
 library(metafor)
 robust(x = metafor::rma(yi = sv_data$d, vi = sv_data$var_d), 
@@ -67,17 +143,50 @@ rma(yi = d, vi = var_d, data = contact_data)
 
 If you want to cluster at a different level, or call your cluster variable something different and modify the function accordingly, go ahead! Every meta-analysis is different, and we encourage you to modify these functions to serve your own needs. (We typically have a `functions` folder in our replication archives where we keep all our custom functions, which is a nice way to keep your function files organized separately from your scripts.)
 
-## 2 subgroup analyses
+## 2 Moderator analyses: Do effects vary by study characteristics?
 
-The second way we use `map_robust` is via subgroup analyses. For instance, in "Preventing Sexual Violence," we wanted to compare the results on ideas-based outcomes to our major categories of behavioral outcomes (perpetration, victimization, bystander behaviors, and involvement behaviors.) To do this, we use the `map` function from the `purrr` library to split the dataset and apply a function (Hadley Wickham calls this  "[The Split-Apply-Combine Strategy for Data Analysis](https://vita.had.co.nz/papers/plyr.pdf)").
+After establishing an overall pooled effect, we typically want to know: **Does the effect size differ across different types of studies or outcomes?** This is called **moderator analysis** or **subgroup analysis**.
 
+### Why run moderator analyses?
+
+High heterogeneity (I² > 75%) suggests that effect sizes vary substantially across studies. Moderator analyses help us understand this variation by testing whether effects differ by:
+
+- **Study design** (RCTs vs. quasi-experiments vs. observational studies)
+- **Outcome type** (attitudes vs. behaviors; short-term vs. long-term outcomes)
+- **Population** (children vs. adults; different cultural contexts)
+- **Intervention characteristics** (dosage, delivery method, theoretical approach)
+
+### Example: Effects by behavior type
+
+In "Preventing Sexual Violence," we wanted to compare effects on **ideas** (attitudes, beliefs) versus different types of **behaviors** (perpetration, victimization, bystander actions, involvement). Here's how we do this with the split-apply-combine strategy:
 
 ```{r split_by_behavioral_ideas_outcomes}
 library(purrr)
-sv_data |> split(~behavior_type) |> map(map_robust) |> bind_rows() 
+library(dplyr)
+sv_data |> split(~behavior_type) |> map(map_robust) |> bind_rows(.id = "behavior_type")
 ```
 
-A note about this: if your "group" (the thing you are running `purrr::split()` on) has only one data point, the resulting numbers won't be a pooled average effect, but instead will just be the ∆ and se and p-value of that individual estimate. If this comes up, you should explain that to your readers in a note on the table. 
+This code:
+
+1. **Splits** the data by `behavior_type` into separate datasets
+2. **Applies** `map_robust()` to each subset
+3. **Combines** the results back into one data frame
+
+Each row now shows the pooled effect for one behavior type. For example, we can see that:
+
+- **Bystander** behaviors: ∆ = 0.18 (27 estimates from 17 studies)
+- **Ideas**: ∆ = 0.35 (346 estimates from 253 studies)
+- **Perpetration**: ∆ = 0.11 (62 estimates from 51 studies)
+
+This moderator analysis tells us that interventions have **larger effects on attitudes/beliefs than on actual behaviors**—a substantively important finding!
+
+### How this appears in published papers
+
+Here's how this moderator analysis looked in our published table:
+
+![Table 2 from Sexual Violence meta-analysis showing effects by outcome type](images/table-2-sv-meta.png)
+
+**Note**: If a subgroup has only one effect size, the output will show that single study's results (not a "pooled" effect). Always note this for readers when it occurs. 
 
 ## 3 Making publication-ready tables out of subgroup analyses
 If we apply a few more functions, we can actually get pretty close to a publication-ready table. 
