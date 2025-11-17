@@ -11,6 +11,7 @@ test_that("extract_model_results works with sv_data", {
 })
 
 test_that("extract_model_results works with contact_data", {
+  skip_if_not_installed("metafor")
   result <- contact_data |> extract_model_results(approach_name = "Contact interventions")
 
   expect_s3_class(result, "tbl_df")
@@ -22,6 +23,7 @@ test_that("extract_model_results works with contact_data", {
 })
 
 test_that("run_subset_meta_analysis works", {
+  skip_if_not_installed("metafor")
   result <- sv_data |>
     run_subset_meta_analysis(
       group_var = "study_design",
@@ -35,6 +37,7 @@ test_that("run_subset_meta_analysis works", {
 })
 
 test_that("process_group works", {
+  skip_if_not_installed("metafor")
   result <- sv_data |>
     process_group(
       group_var = "study_design",
@@ -48,6 +51,7 @@ test_that("process_group works", {
 })
 
 test_that("p-values are formatted correctly for small values", {
+  skip_if_not_installed("metafor")
   result <- sv_data |> extract_model_results()
 
   # Should format very small p-values as "< 0.001"

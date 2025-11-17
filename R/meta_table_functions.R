@@ -319,8 +319,13 @@ process_group <- function(data, group_var, ref_level, order_levels = NULL, inclu
     )
 
   # Reorder columns
-  group_results <- group_results |>
-    select(Moderator, N_Studies, N_Estimates, Delta, CI, p_val, p_val_ref)
+  if (include_tau) {
+    group_results <- group_results |>
+      select(Moderator, N_Studies, N_Estimates, Delta, tau, CI, p_val, p_val_ref)
+  } else {
+    group_results <- group_results |>
+      select(Moderator, N_Studies, N_Estimates, Delta, CI, p_val, p_val_ref)
+  }
 
   return(group_results)
 }
