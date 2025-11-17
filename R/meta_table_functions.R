@@ -4,10 +4,10 @@ utils::globalVariables(c("unique_study_id", "var_d", "Delta", "Moderator",
 
 #' Run Subset Meta-Analysis with Flexible Filtering
 #'
-#' This function performs robust meta-analysis on subsets of data with
-#' flexible filtering options. It's designed to handle edge cases like
-#' single studies or failed models gracefully, making it ideal for
-#' creating moderator analysis tables.
+#' This function performs meta-analysis on subsets of data with
+#' flexible filtering options, using metafor with cluster-robust standard errors.
+#' It's designed to handle edge cases like single studies or failed models
+#' gracefully, making it ideal for creating moderator analysis tables.
 #'
 #' @param data A dataset containing effect sizes with columns for effect size (`d`),
 #'   variance (`var_d`), and study identifier (`unique_study_id`).
@@ -19,7 +19,7 @@ utils::globalVariables(c("unique_study_id", "var_d", "Delta", "Moderator",
 #'   or exact matching (FALSE) when filtering (default: TRUE).
 #' @param approach_name Optional custom name for the approach/moderator level.
 #' @param col_name Name for the first column in output (default: "Moderator").
-#' @param include_tau Logical indicating whether to include tau (between-study
+#' @param include_tau Logical indicating whether to include tau (residual
 #'   heterogeneity) in the output (default: FALSE).
 #'
 #' @return A tibble with meta-analysis results including columns for the
@@ -32,7 +32,7 @@ utils::globalVariables(c("unique_study_id", "var_d", "Delta", "Moderator",
 #'   \code{\link{process_group}} for complete moderator table creation,
 #'   \code{\link{extract_model_results}} for simpler result extraction
 #'
-#' @importFrom robumeta robu
+#' @importFrom metafor rma robust
 #' @importFrom tibble tibble
 #' @importFrom dplyr filter n_distinct mutate
 #' @importFrom rlang sym !! :=
@@ -97,14 +97,8 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
 
   # Run meta-analysis (even with 1 study)
   model <- tryCatch({
-    robumeta::robu(
-      formula = d ~ 1,
-      data = data_subset,
-      studynum = data_subset$unique_study_id,
-      var.eff.size = data_subset$var_d,
-      modelweights = "CORR",
-      small = TRUE
-    )
+    base_model <- metafor::rma(yi = data_subset$d, vi = data_subset$var_d)
+    metafor::robust(base_model, cluster = data_subset$unique_study_id)
   }, error = function(e) {
     return(NULL)
   })
@@ -122,10 +116,10 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
   }
 
   # Extract results
-  estimate <- model$reg_table$b.r
-  ci_lower <- model$reg_table$CI.L
-  ci_upper <- model$reg_table$CI.U
-  p_val <- format(round(model$reg_table$prob, 3), scientific = FALSE)
+  estimate <- as.numeric(model$beta)
+  ci_lower <- model$ci.lb
+  ci_upper <- model$ci.ub
+  p_val <- format(round(model$pval, 3), scientific = FALSE)
   p_val <- sub("^0\\.", ".", p_val)  # Remove leading zero
 
   # Create result tibble
@@ -138,7 +132,7 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
 
   # Add tau if requested
   if (include_tau) {
-    tau <- round(sqrt(model$mod_info$tau.sq), 2)[1]
+    tau <- round(sqrt(model$tau2), 2)
     result <- result |> mutate(tau = tau)
   }
 
@@ -153,10 +147,10 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
 
 #' Run Meta-Regression and Extract P-values
 #'
-#' This function runs a meta-regression with a categorical moderator
-#' and extracts p-values for comparisons with a reference level.
-#' It's designed to work with \code{\link{process_group}} to create
-#' complete moderator analysis tables.
+#' This function runs a meta-regression with a categorical moderator using
+#' metafor with cluster-robust standard errors and extracts p-values for
+#' comparisons with a reference level. It's designed to work with
+#' \code{\link{process_group}} to create complete moderator analysis tables.
 #'
 #' @param data A dataset containing effect sizes with columns for effect size (`d`),
 #'   variance (`var_d`), and study identifier (`unique_study_id`).
@@ -171,7 +165,7 @@ run_subset_meta_analysis <- function(data, group_var = NULL, level = NULL,
 #' @seealso \code{\link{run_subset_meta_analysis}} for subset analysis,
 #'   \code{\link{process_group}} for complete moderator analysis
 #'
-#' @importFrom robumeta robu
+#' @importFrom metafor rma robust
 #' @importFrom dplyr group_by summarise filter pull n_distinct mutate
 #' @importFrom rlang sym !!
 #' @export
@@ -198,7 +192,8 @@ run_meta_regression <- function(data, group_var, ref_level) {
   # Ensure the grouping variable is a factor with the reference level first
   data <- data |>
     mutate(
-      group_var_factor = factor(!!sym(group_var), levels = c(ref_level, setdiff(sufficient_levels, ref_level)))
+      group_var_factor = factor(!!sym(group_var),
+                               levels = c(ref_level, setdiff(sufficient_levels, ref_level)))
     )
 
   # Check if there are at least two levels to run meta-regression
@@ -209,16 +204,10 @@ run_meta_regression <- function(data, group_var, ref_level) {
     return(p_values_named)
   }
 
-  # Run meta-regression
+  # Run meta-regression with cluster-robust SEs
   model <- tryCatch({
-    robumeta::robu(
-      formula = d ~ group_var_factor,
-      data = data,
-      studynum = data$unique_study_id,
-      var.eff.size = data$var_d,
-      modelweights = "CORR",
-      small = TRUE
-    )
+    base_model <- metafor::rma(yi = d ~ group_var_factor, vi = var_d, data = data)
+    metafor::robust(base_model, cluster = data$unique_study_id)
   }, error = function(e) {
     # Handle error in meta-regression
     p_values_named <- setNames(rep(NA_character_, length(sufficient_levels)), sufficient_levels)
@@ -226,21 +215,15 @@ run_meta_regression <- function(data, group_var, ref_level) {
     return(p_values_named)
   })
 
-  # Extract p-values
-  coef_table <- model$reg_table
-  p_values <- coef_table$prob
-  names(p_values) <- rownames(coef_table)
-
-  # Adjust names to match levels
-  p_values <- p_values[-1]  # Exclude the intercept (reference level)
+  # Extract p-values for each level (excluding intercept)
   level_names <- levels(data$group_var_factor)[-1]
-  names(p_values) <- level_names
+  p_values <- model$pval[-1]  # Exclude intercept
 
   # Format p-values
   p_values_formatted <- formatC(p_values, format = "f", digits = 3)
   p_values_formatted <- sub("^0\\.", ".", p_values_formatted)
 
-  # Create a named vector of p-values, include NA for levels not in meta-regression
+  # Create a named vector of p-values
   p_values_named <- setNames(rep(NA_character_, length(sufficient_levels)), sufficient_levels)
   p_values_named[ref_level] <- "ref"
   p_values_named[level_names] <- p_values_formatted
@@ -254,7 +237,7 @@ run_meta_regression <- function(data, group_var, ref_level) {
 #' and meta-regression to create complete moderator analysis tables.
 #' It runs separate meta-analyses for each level of a grouping variable
 #' and adds p-values from meta-regression comparing each level to a
-#' reference level.
+#' reference level. Uses metafor with cluster-robust standard errors.
 #'
 #' @param data A dataset containing effect sizes with columns for effect size (`d`),
 #'   variance (`var_d`), and study identifier (`unique_study_id`).

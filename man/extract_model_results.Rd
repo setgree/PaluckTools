@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract_model_results.R
 \name{extract_model_results}
 \alias{extract_model_results}
-\title{Extract Model Results from Robust Meta-Analysis}
+\title{Extract Model Results from Meta-Analysis}
 \usage{
 extract_model_results(data, approach_name = "Overall")
 }
@@ -23,14 +23,14 @@ A tibble with one row containing:
 \item{SE}{Standard error (rounded to 2 decimals)}
 \item{CI}{Confidence interval formatted as bracketed range}
 \item{p_val}{P-value (formatted as "< 0.001" or without leading zero)}
-\item{tau}{Between-study heterogeneity (rounded to 3 decimals)}
+\item{tau}{Residual heterogeneity (rounded to 3 decimals)}
 }
 }
 \description{
-This function runs a robust meta-analysis using \code{robumeta::robu} and
-extracts key results into a clean, publication-ready tibble format.
-It's particularly useful for creating summary tables of meta-analytic
-results across different subsets or approaches.
+This function runs a meta-analysis using \code{metafor::rma()} with cluster-robust
+standard errors and extracts key results into a clean, publication-ready
+tibble format. It's particularly useful for creating summary tables of
+meta-analytic results across different subsets or approaches.
 }
 \examples{
 # Extract overall results from contact intervention data
@@ -47,7 +47,7 @@ BLPlabtools::sv_data |>
 }
 \seealso{
 \code{\link{run_subset_meta_analysis}} for more flexible subset analysis,
-\code{\link{map_robust}} for simpler robust meta-analysis
+\code{\link{map_robust}} for the existing robust meta-analysis function
 
 Other meta-analysis functions: 
 \code{\link{forest_meta_function}()},

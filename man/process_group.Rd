@@ -41,7 +41,7 @@ This is a high-level function that orchestrates subset meta-analyses
 and meta-regression to create complete moderator analysis tables.
 It runs separate meta-analyses for each level of a grouping variable
 and adds p-values from meta-regression comparing each level to a
-reference level.
+reference level. Uses metafor with cluster-robust standard errors.
 }
 \examples{
 \dontrun{

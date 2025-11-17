@@ -20,10 +20,10 @@ marked as "ref" and other levels showing their p-values from the
 meta-regression.
 }
 \description{
-This function runs a meta-regression with a categorical moderator
-and extracts p-values for comparisons with a reference level.
-It's designed to work with \code{\link{process_group}} to create
-complete moderator analysis tables.
+This function runs a meta-regression with a categorical moderator using
+metafor with cluster-robust standard errors and extracts p-values for
+comparisons with a reference level. It's designed to work with
+\code{\link{process_group}} to create complete moderator analysis tables.
 }
 \examples{
 \dontrun{

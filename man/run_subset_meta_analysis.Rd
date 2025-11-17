@@ -35,7 +35,7 @@ or exact matching (FALSE) when filtering (default: TRUE).}
 
 \item{col_name}{Name for the first column in output (default: "Moderator").}
 
-\item{include_tau}{Logical indicating whether to include tau (between-study
+\item{include_tau}{Logical indicating whether to include tau (residual
 heterogeneity) in the output (default: FALSE).}
 }
 \value{
@@ -45,10 +45,10 @@ estimate (Delta), confidence interval, and p-value. If include_tau is TRUE,
 also includes tau.
 }
 \description{
-This function performs robust meta-analysis on subsets of data with
-flexible filtering options. It's designed to handle edge cases like
-single studies or failed models gracefully, making it ideal for
-creating moderator analysis tables.
+This function performs meta-analysis on subsets of data with
+flexible filtering options, using metafor with cluster-robust standard errors.
+It's designed to handle edge cases like single studies or failed models
+gracefully, making it ideal for creating moderator analysis tables.
 }
 \examples{
 \dontrun{
