@@ -12,15 +12,14 @@ meta-analyses and analyzing experimental data.
 This package integrates functions from three sources:
 
 - [PaluckMetaSOP](https://github.com/setgree/PaluckMetaSOP) -
-  meta-analysis functions featured in “[The Contact Hypothesis
-  Re-evaluated](https://doi.org/10.1017/bpp.2018.25),” “[Preventing
+  meta-analysis functions featured in "[The Contact Hypothesis
+  Re-evaluated](https://doi.org/10.1017/bpp.2018.25)," "[Preventing
   Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed
-  Solution](https://doi.org/10.1177/15291006231221978),” 
-  and "[Meaningfully reducing consumption
-  of meat and animal products is an unsolved problem: 
-  A meta-analysis](https://doi.org/10.1016/j.appet.2025.108233)" 
-  (a meta-analysis that I (Seth Green) co-authored using methods I
-  learned at the Paluck Lab.)
+  Solution](https://doi.org/10.1177/15291006231221978),"
+  and [vegan-meta](https://github.com/hsflabstanford/vegan-meta): "[Meaningfully reducing consumption
+  of meat and animal products is an unsolved problem:
+  A meta-analysis](https://doi.org/10.1016/j.appet.2025.108233)"
+  (this meta-analysis was not conducted at the BLP Lab but was highly influenced by BLP Lab methods)
 - [blpl](https://github.com/johnhenrypezzuto/blpl) - John-Henry
   Pezzuto’s experimental analysis and table formatting tools
 - [prejudice-reduction-code-and-data](https://github.com/setgree/prejudice-reduction-code-and-data) -
@@ -31,8 +30,14 @@ This package integrates functions from three sources:
 ## Installation
 
 ``` r
+# Install with vignettes (recommended)
 remotes::install_github('setgree/BLPlabtools', build_vignettes = TRUE)
+
+# Or install a specific release version
+remotes::install_github('setgree/BLPlabtools@v0.2.0', build_vignettes = TRUE)
 ```
+
+**Note**: The `build_vignettes = TRUE` flag is required to include the comprehensive documentation vignettes.
 
 ## What you’ll find
 
