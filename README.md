@@ -22,10 +22,10 @@ This package contains:
 - **Functions** for meta-analysis and experimental analysis
 - **Vignettes** that walk through different workflows, focusing on meta-analysis
 - **Datasets**:
-  - `sv_data` - Sexual violence prevention meta-analysis
-  - `contact_data` - Contact hypothesis meta-analysis
-  - `map_reduction_data` - Meat/animal product reduction meta-analysis
-    (Green et al., 2025)
+  - `sv_data` - data from [sexual violence prevention meta-analysis](https://doi.org/10.1177/15291006231221978)
+  - `contact_data` - data from [contact hypothesis meta-analysis](https://doi.org/10.1017/bpp.2018.25)
+  - `map_reduction_data` - data from [meat animal product reduction meta-analysis](https://doi.org/10.1016/j.appet.2025.108233)
+  
 
 ## Getting started
 
