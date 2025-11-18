@@ -353,9 +353,9 @@ sv_data |> filter(has_both == 'both') |>
         legend.box = "vertical")
 ```
 
-## 4 Creating a reproducible research environment
+## Creating a reproducible research environment
 
-### 4.1 `write_dockerfile`
+### `write_dockerfile`
 
 Once you've completed your analysis, you can use `write_dockerfile` to create a Docker container that captures your exact R environment. This ensures your analysis can be reproduced years later, even as R and package versions change.
 
