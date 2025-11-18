@@ -35,9 +35,7 @@ library(stringr)
 library(tidyr)
 ```
 
-# Introduction
-
-Now that we've [conducted our meta-analyses](meta-analysis-vignette.html), it's time to write the paper. This vignette covers three topics that help with that: functions for summary statistics, a function that helps you turn your database into a bibliography, and some ggplot2-based visualizations that we've found useful.
+Now that we've [conducted our meta-analyses](meta-analysis-vignette.html), it's time to write the paper. This vignette covers three topics that help with that: functions for summary statistics, a function that help you turn your database into a bibliography, and some ggplot2-based visualizations that we've found useful.
 
 Once again, we'll illustrate with data from two previous meta-analyses: `sv_data` from "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)" and `contact_data` from "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)."
 
@@ -85,7 +83,7 @@ sv_data |> split(~study_design) |> map(study_count) |>
   bind_rows(.id = "study_design")
 ```
 
-### Turning a database of studies into a bibliography file
+## Turning a database of studies into a bibliography file
 
 The `make_bib()` function takes a data frame containing DOI information and creates a BibTeX (.bib) file. This is a wrapper around `RefManageR::WriteBib()` that fetches bibliographic information for each DOI and writes it to a .bib file suitable for use with LaTeX.
 
@@ -315,7 +313,7 @@ tt_gender_fig = dat_participant_sex |>
 country_fig / setting_fig / tt_gender_fig 
 ```
 
-### correlation between ideas-based and behavioral outcomes
+### Correlation between ideas-based and behavioral outcomes
 
 For "Preventing Sexual Violence," we wanted to check whether changes in ideas were linked to changes in behavior. We first created a subset of our dataset with just studies that measured both categories, and then made a scatterplot that plotted changes in one dimension against changes in the other. The black line represents what a 1-to-1 correlation between the two outcomes would have looked like, and the gray line is what we actually observed.
 
@@ -390,14 +388,3 @@ This creates a file called `Dockerfile` in your current directory. You can then:
 3. **Upload it to services like [mybinder.org](https://mybinder.org/)** to create an interactive online version of your analysis
 
 For more on using Dockerfiles with R, see the [Rocker Project](https://www.rocker-project.org/) ([Boettiger & Eddelbuettel, 2017](https://arxiv.org/abs/1710.03675)).
-
-### Why reproducibility matters
-
-Meta-analyses aggregate results from dozens or hundreds of studies. The calculations can be complex, with many judgment calls about inclusion criteria, effect size conversions, and subgroup analyses. Creating a reproducible environment ensures that:
-
-- Reviewers can verify your analysis
-- Future researchers can extend your work
-- You can revisit your analysis years later and understand exactly what you did
-- Your work contributes to open science practices
-
-The `write_dockerfile` function makes this process straightforward by automatically capturing all the dependencies your analysis needs.
