@@ -41,9 +41,9 @@ Now that we've [conducted our meta-analyses](meta-analysis-vignette.html), it's 
 
 Once again, we'll illustrate with data from two previous meta-analyses: `sv_data` from "[Preventing Sexual Violence —A Behavioral Problem Without a Behaviorally-Informed Solution](https://doi.org/10.1177/15291006231221978)" and `contact_data` from "[The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25)."
 
-## 1 Summary statistics functions
+## Summary statistics functions
 
-### 1.1 `summarise_lm`
+### `summarise_lm`
 
 `summarise_lm` takes the built in R functions `summary(lm())` and lets you use them in a sequence of pipes. In particular this is useful when you want to test for the magnitude of a relationship between two variables in many different subsets of data at once.
 
@@ -54,7 +54,7 @@ sv_data |> summarise_lm()
 sv_data |> split(~study_design) |> map(summarise_lm)
 ```
 
-### 1.2 `summarise_table`
+### `summarise_table`
 
 `summarise_table`, like `summarise_lm`, takes a built in function (`table`) and turns it into something that can be integrated into a sequence of pipes. Again, this is useful for when you want to see many tables at once, or put a few tables into a bigger table.
 
@@ -75,7 +75,7 @@ map(~ summarise_table(., behavior_type)) |> bind_rows(.id = "study_design")
 # as.data.frame(summarise_table(sv_data, behavior_type))
 ```
 
-### 1.3 `study_count`
+### `study_count`
 
 This simple function counts how many studies are in a dataset or in different subsets of your data. It assumes your dataset has a variable called `unique_study_id`.
 
@@ -85,7 +85,7 @@ sv_data |> split(~study_design) |> map(study_count) |>
   bind_rows(.id = "study_design")
 ```
 
-### 2 Turning a database of studies into a bibliography file
+### Turning a database of studies into a bibliography file
 
 The `make_bib()` function takes a data frame containing DOI information and creates a BibTeX (.bib) file. This is a wrapper around `RefManageR::WriteBib()` that fetches bibliographic information for each DOI and writes it to a .bib file suitable for use with LaTeX.
 
@@ -131,9 +131,9 @@ make_bib(extra_doi, bib_file = "./references.bib", overwrite = FALSE)
 
 The resulting .bib file can be used directly in your LaTeX document with `\bibliography{references}`.
 
-## 3 Visualizations
+## Visualizations
 
-### 3.1 Forest plot
+### Forest plot
 
 Forest plots are a staple of meta-analyses. Many R packages have functions to create them, e.g. `metafor::forest`. However, our meta-analytic figures typically add color coding to denote additional information about (e.g.) study design, theoretical category, or outcome type. There was no easy way to do that with existing functions, so here's one approach to doing that in ggplot2 (and some supplementary plotting libraries as well).
 
@@ -188,7 +188,7 @@ plot_dat |> ggplot(aes(x = d, y = name_short)) +
 
 We didn't actually use this code in "The Contact Hypothesis Re-evaluated", but we probably would have if we were writing that paper now.
 
-### 3.2 Relationship between Standard Error and D
+### Relationship between Standard Error and D
 
 A standard check for publication bias is to see if effect size is positively correlated with the size of the standard error. The idea is that in the presence of publication bias, smaller studies are more likely to get shelved if they produce null results, whereas large, well-powered studies are more likely to get published no matter what. In that case, you'd expect for small studies to be an inaccurate estimate of the true population effect size, and for larger studies to produce systematically smaller estimates.
 
@@ -220,7 +220,7 @@ target_labels <- c("Age", "Disability", "Foreigners", "Gender",
 
 ```
 
-### 3.3 Descriptive figures
+### Descriptive figures
 
 This code produces figures that display descriptive characteristics of `sv_data` for "Preventing Sexual Violence. As you can see, this required a lot of custom code to account for particular things about how we put the dataset together, so it won't perfectly generalize to a new project; but we think the overall ideas are worth preserving and communicating. (The following was all written by John-Henry Pezzuto.)
 
@@ -315,7 +315,7 @@ tt_gender_fig = dat_participant_sex |>
 country_fig / setting_fig / tt_gender_fig 
 ```
 
-### 3.4 correlation between ideas-based and behavioral outcomes
+### correlation between ideas-based and behavioral outcomes
 
 For "Preventing Sexual Violence," we wanted to check whether changes in ideas were linked to changes in behavior. We first created a subset of our dataset with just studies that measured both categories, and then made a scatterplot that plotted changes in one dimension against changes in the other. The black line represents what a 1-to-1 correlation between the two outcomes would have looked like, and the gray line is what we actually observed.
 
@@ -355,9 +355,9 @@ sv_data |> filter(has_both == 'both') |>
         legend.box = "vertical")
 ```
 
-## 4 Creating a reproducible research environment
+## Creating a reproducible research environment
 
-### 4.1 `write_dockerfile`
+### `write_dockerfile`
 
 Once you've completed your analysis, you can use `write_dockerfile` to create a Docker container that captures your exact R environment. This ensures your analysis can be reproduced years later, even as R and package versions change.
 
@@ -391,7 +391,7 @@ This creates a file called `Dockerfile` in your current directory. You can then:
 
 For more on using Dockerfiles with R, see the [Rocker Project](https://www.rocker-project.org/) ([Boettiger & Eddelbuettel, 2017](https://arxiv.org/abs/1710.03675)).
 
-### 4.2 Why reproducibility matters
+### Why reproducibility matters
 
 Meta-analyses aggregate results from dozens or hundreds of studies. The calculations can be complex, with many judgment calls about inclusion criteria, effect size conversions, and subgroup analyses. Creating a reproducible environment ensures that:
 

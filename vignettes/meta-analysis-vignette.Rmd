@@ -73,7 +73,7 @@ sv_data |>
 
 If your data is structured this way (which you should have after following the [d-calc vignette](d-calc-vignette.html)), you're ready to run meta-analyses.
 
-## 1 The easy case: combining all estimates into a single pooled effect size
+## The easy case: combining all estimates into a single pooled effect size
 
 `map_robust` is a wrapper around a pre-existing function from the `metafor` package called `robust`, which is itself a wrapped around the function `rma`. See the `man` pages for those functions for full details.
 
@@ -111,7 +111,7 @@ robust(x = metafor::rma(yi = sv_data$d, vi = sv_data$var_d),
 
 Our function is different in a few respects. First, it's designed to take in a dataset via a piped operation (`|>`), which was actually the main reason we wrote it in the first place (we were in the habit of using a lot of pipes). Second, so long as your dataset contains variables called `d`, `var_d`, and `unique_study_id`, it's a lot easier to type. Third, it returns a truncated output that corresponds to the information we were actually recording in our results sections.
 
-### 1.1 A note about clustering
+### A note about clustering
 
 Clustering accounts for the fact that multiple effect sizes from the same study are not independent—they share the same participants, setting, and research team. By clustering at the study level, we get more accurate standard errors that account for this dependence.
 
@@ -136,7 +136,7 @@ rma(yi = d, vi = var_d, data = contact_data)
 
 If you want to cluster at a different level, or call your cluster variable something different and modify the function accordingly, go ahead! Every meta-analysis is different, and we encourage you to modify these functions to serve your own needs. (We typically have a `functions` folder in our replication archives where we keep all our custom functions, which is a nice way to keep your function files organized separately from your scripts.)
 
-## 2 Example moderator analyses
+## Example moderator analyses
 
 After establishing an overall pooled effect, we typically want to know: **Does the effect size differ across different types of studies or outcomes?** This is called **moderator analysis** or **subgroup analysis**.
 
@@ -170,7 +170,7 @@ Here's how this moderator analysis looked in our published table:
 
 **Note**: If a subgroup has only one effect size, the output will show that single study's results (not a "pooled" effect). Always note this for readers when it occurs. 
 
-## 3 Making publication-ready tables out of subgroup analyses
+## Making publication-ready tables out of subgroup analyses
 If we apply a few more functions, we can actually get pretty close to a publication-ready table. 
 
 `dplyr::bind_cols()` combines multiple data frames (in this case, a list of lists) into a single data frame.
@@ -244,5 +244,5 @@ gt() |>
 
 `gt` has a function called `as_latex()` that will convert this all into latex code directly.
 
-## 4 Next up
+## Next up
 [Writing your meta-analytic paper](writing-metas-vignette.html).
