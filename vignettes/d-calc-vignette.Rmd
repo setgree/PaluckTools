@@ -51,7 +51,7 @@ Before diving into effect size calculations, it helps to know what columns you'l
 
 ```{r preview_contact_data}
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 data(contact_data)
 
 # View essential columns for effect size calculation
@@ -402,6 +402,8 @@ Note that with this estimator, if an event does not occur in the control group, 
 Some studies, e.g. [Hall 1969](https://ir-api.ua.edu/api/core/bitstreams/8b53661b-99c5-4a2f-9e2d-603bfffb3eb0/content), don't tell you exactly what effect they find, just that it was not not significant. We set all of these cases to ∆ = 0.01 so we can include them in our main analyses. You can set these nulls to 0.00, or 0.001, or anything that substantively communicates "there was no effect", and get basically the same result.
 
 `d_calc("unspecified_null")` will always return 0.01 no matter the values of the other parameters.
+
+*n.b.* You can also use the R package `metansue` to address this general problem. (We used the `unspecified_null = 0.01` convention in our meta-analyses where it came up.)
 
 ## Hard cases: non-standard conversions of results into SMDs {#section4}
 

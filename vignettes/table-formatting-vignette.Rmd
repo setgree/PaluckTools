@@ -59,7 +59,7 @@ We'll use the built-in `sv_data` dataset, which contains effect sizes from inter
 
 ```{r load_data}
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(knitr)
 
 # Preview the data

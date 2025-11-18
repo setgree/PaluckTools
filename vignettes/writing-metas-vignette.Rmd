@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 # Load all required libraries at the start
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(purrr)
 library(ggplot2)
 library(ggtext)
@@ -369,7 +369,7 @@ The function converts the output from `sessionInfo()` into a Dockerfile that spe
 ```{r dockerfile, eval=FALSE}
 # After loading all packages you used in your analysis, run:
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 # ... other packages you used
 
