@@ -22,46 +22,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction
+This vignette demonstrates tools for analyzing experimental data: `tidy_lm()` for running multiple regression specifications, `robust_se()` for cluster-robust standard errors, and `star_ready()` for preparing results for publication. For more on table formatting, see the "Creating publication-ready tables" vignette.
 
-This vignette demonstrates tools for analyzing experimental data. While the previous vignettes focused on meta-analysis, this one covers the experimental analysis workflow using functions designed to streamline common tasks in social psychology research.
+# Example data
 
-## The experimental analysis challenge
-
-When you analyze experimental data, you often face these challenges:
-
-- **Multiple specifications**: You need to run many regression models—different dependent variables, different sets of controls, different subsamples—to ensure your findings are robust
-- **Clustered data**: Your experimental units are often nested (students within schools, voters within precincts), which violates the independence assumption of standard regression
-- **Efficient reporting**: You need to extract and report treatment effects across dozens of specifications without manual copy-pasting
-
-**Why this matters**: Running a single regression specification is rarely sufficient for publication. Reviewers and readers expect to see:
-- Results across multiple outcomes (primary and secondary)
-- Models with and without controls (to show robustness)
-- Properly adjusted standard errors (to avoid false precision)
-- Subgroup analyses (to understand heterogeneity)
-
-Doing all of this manually—running each regression, extracting coefficients, adjusting standard errors, compiling results into tables—is time-consuming and error-prone.
-
-## What BLPlabtools provides
-
-BLPlabtools automates this workflow with two main categories of functions:
-
-1. **`tidy_lm()`**: Run multiple regression specifications efficiently and return results in a tidy data frame
-2. **`robust_se()`**: Calculate cluster-robust standard errors that account for within-cluster correlation
-
-This vignette walks through each of these tools using realistic simulated data from a growth mindset intervention study. For information on creating publication-ready tables from your results, see the "Creating publication-ready tables" vignette.
-
-# Example data: Growth mindset intervention
-
-For realistic examples, we'll create a simulated dataset from a typical social psychology experiment. Imagine a study testing whether a growth mindset intervention improves student outcomes across 20 schools (100 students per school).
+We'll use simulated data from a growth mindset intervention with 2,000 students across 20 schools.
 
 ```{r simulate_data}
 library(BLPlabtools)
 library(dplyr, warn.conflicts = FALSE)
 
-set.seed(123)  # For reproducibility
+set.seed(123)
 
-# Simulate experimental data
 n_schools <- 20
 n_per_school <- 100
 n_total <- n_schools * n_per_school
@@ -69,12 +41,9 @@ n_total <- n_schools * n_per_school
 experiment_data <- data.frame(
   student_id = 1:n_total,
   school_id = rep(1:n_schools, each = n_per_school),
-  # Treatment assignment (randomized within schools)
   treatment = rep(c(rep(0, n_per_school/2), rep(1, n_per_school/2)), n_schools),
-  # Baseline covariates
   baseline_score = rnorm(n_total, mean = 70, sd = 15),
   gender = sample(c("female", "male"), n_total, replace = TRUE),
-  # Outcomes (treatment effect = +5 points on average)
   test_score = 70 + 5*rep(c(rep(0, n_per_school/2), rep(1, n_per_school/2)), n_schools) +
                rnorm(n_total, sd = 12),
   attendance = 0.85 + 0.03*rep(c(rep(0, n_per_school/2), rep(1, n_per_school/2)), n_schools) +
@@ -87,51 +56,14 @@ experiment_data <- data.frame(
     gender = factor(gender)
   )
 
-# Preview the data structure
 head(experiment_data)
 ```
 
-This dataset has:
-- **2,000 students** across **20 schools** (clustered data)
-- **Treatment variable**: Growth mindset intervention (Control vs Treatment)
-- **Baseline covariate**: prior test scores, gender
-- **Outcomes**: test scores, attendance rate, attitude scale (1-5)
-
-## What your experimental data should look like
-
-For experimental analysis with `tidy_lm` and `robust_se`, your data should be in "long" format with one row per observation (student, participant, unit). Here's what you need:
-
-**Essential columns:**
-
-- **ID variables**: Unique identifier for each observation (e.g., `student_id`)
-- **Clustering variable**: If data are clustered (e.g., `school_id`, `site_id`, `pair_id`)
-- **Treatment variable**: Binary or factor variable indicating treatment assignment (e.g., `treatment`)
-- **Outcome variables**: Numeric variables you want to analyze (e.g., `test_score`, `attendance`, `attitudes`)
-
-**Recommended columns:**
-
-- **Baseline covariates**: Pre-treatment variables for precision (e.g., `baseline_score`, `gender`, `age`)
-- **Moderators**: Variables for subgroup analysis (e.g., `gender`, `school_type`)
-
-The `tidy_lm` function is designed to work with **tidy data** where:
-- Each row is an observation
-- Each column is a variable
-- Each cell contains a single value
-
-This is the standard format for data analysis in R. If your data are in wide format (e.g., separate columns for pretest and posttest), you'll need to reshape them using `tidyr::pivot_longer()` or similar tools.
-
-**A note on clustering**: If your experimental units are nested (students within schools, voters within precincts), you should account for this by specifying the `clusters` parameter in `tidy_lm` or using `robust_se` directly. This adjusts standard errors to account for within-cluster correlation and prevents false precision in your estimates.
-
 # Running multiple regressions with `tidy_lm`
-
-When analyzing experimental data, you often need to run many regression specifications: different dependent variables, different sets of controls, different subsamples. The `tidy_lm` function streamlines this process by allowing you to specify multiple models at once and returning the results in a tidy data frame format.
 
 ## Basic usage
 
-Test whether the treatment affects test scores:
-
 ```{r basic_tidy_lm}
-# Simple treatment effect
 results <- tidy_lm(
   data = experiment_data,
   dv = "test_score",
@@ -139,27 +71,12 @@ results <- tidy_lm(
   treatment = "treatment"
 )
 
-# View treatment coefficient
 results |> select(dv, treatmentTreatment_coef, treatmentTreatment_p)
 ```
 
-The output is a tidy data frame where each row represents one regression model. The `treatment` parameter extracts coefficients automatically.
-
-### Understanding the output
-
-This output tells us:
-- **`dv`**: The dependent variable (test_score)
-- **`treatmentTreatment_coef`**: The treatment effect estimate (~5 points on the test)
-- **`treatmentTreatment_p`**: The p-value testing if this effect differs from zero
-
-Behind the scenes, `tidy_lm()` ran the regression `lm(test_score ~ treatment, data = experiment_data)` and extracted the treatment coefficient automatically. This becomes especially powerful when you need to run dozens of specifications—you don't have to manually extract coefficients from each model.
-
 ## Multiple dependent variables
 
-Test treatment effects across all outcomes simultaneously:
-
 ```{r multiple_dvs}
-# Test treatment on test scores, attendance, and attitudes
 multi_outcome <- tidy_lm(
   data = experiment_data,
   dv = c("test_score", "attendance", "attitudes"),
@@ -167,29 +84,12 @@ multi_outcome <- tidy_lm(
   treatment = "treatment"
 )
 
-# View treatment effects across all outcomes
 multi_outcome |> select(dv, treatmentTreatment_coef, treatmentTreatment_p)
 ```
 
-This output shows three separate regressions—one for each dependent variable—all in a single data frame. Notice how the treatment effect varies across outcomes:
-- **test_score**: Effect of ~5 points (p < 0.001)
-- **attendance**: Effect of ~0.03 (3 percentage points, p < 0.001)
-- **attitudes**: Effect of ~0.3 on a 1-5 scale (p < 0.001)
+## Regression styles
 
-This is much more efficient than running three separate `lm()` calls and manually extracting coefficients from each.
-
-## Different regression styles
-
-A key feature of `tidy_lm()` is the ability to specify different **styles** of regression specifications. This is important because you often want to show that your treatment effect is robust to the inclusion of different sets of controls.
-
-### Why use different styles?
-
-In experimental analysis, you typically want to show:
-1. **Simple treatment effect** (no controls)—shows the raw experimental contrast
-2. **Controlled models** (with covariates)—increases precision and demonstrates robustness
-3. **Multiple specifications** (progressively adding controls)—shows the effect doesn't depend on specific control variables
-
-The `style` parameter controls how `tidy_lm()` combines your variables:
+The `style` parameter controls how `tidy_lm()` combines variables:
 
 ```{r regression_styles}
 # "bivariate": treatment only
@@ -219,108 +119,26 @@ full_model <- tidy_lm(
 )
 
 cat("Bivariate:", nrow(bivariate), "model\n")
-cat("Incremental:", nrow(incremental), "models (adds controls one at a time)\n")
-cat("Default:", nrow(full_model), "model (all controls together)\n")
-```
-
-### Understanding the styles
-
-- **`style = "bivariate"`**: Runs only `lm(test_score ~ treatment)`—ignores all other terms
-- **`style = "incremental"`**: Runs 3 models:
-  1. `lm(test_score ~ treatment)`
-  2. `lm(test_score ~ treatment + baseline_score)`
-  3. `lm(test_score ~ treatment + baseline_score + gender)`
-- **`style = "default"`**: Runs 1 model with all terms: `lm(test_score ~ treatment + baseline_score + gender)`
-
-The incremental style is especially useful for publication tables where you want to show results across multiple specifications in separate columns.
-
-## Real-world workflow: Multiple outcomes with controls
-
-A typical analysis tests treatment effects on multiple outcomes, with and without controls:
-
-```{r typical_workflow}
-# Analyze all outcomes with progressive controls
-full_analysis <- tidy_lm(
-  data = experiment_data,
-  dv = c("test_score", "attendance", "attitudes"),
-  terms = c("treatment", "baseline_score", "gender"),
-  treatment = "treatment",
-  style = "incremental"
-)
-
-# Extract treatment effects across all specifications
-full_analysis |>
-  select(model_number, dv, treatmentTreatment_coef,
-         treatmentTreatment_se, treatmentTreatment_p) |>
-  mutate(significant = treatmentTreatment_p < 0.05)
+cat("Incremental:", nrow(incremental), "models\n")
+cat("Default:", nrow(full_model), "model\n")
 ```
 
 # Cluster-robust standard errors
 
-## Why clustering matters
-
-Our students are clustered within schools, so we need cluster-robust standard errors to account for within-school correlation. This is one of the most important—and most commonly mishandled—aspects of experimental analysis.
-
-### The independence assumption problem
-
-Standard regression assumes that all observations are **independent**—that knowing something about one observation tells you nothing about another. But in many experiments, this assumption is violated:
-
-- **Students within schools**: Share the same teachers, curriculum, school culture
-- **Voters within precincts**: Experience the same local campaigning, community norms
-- **Participants within sessions**: May influence each other through group dynamics
-
-When observations within clusters are correlated, standard regression **underestimates standard errors**, making results appear more precise than they actually are. This leads to:
-- Overly narrow confidence intervals
-- Inflated t-statistics
-- Higher rates of false positives (Type I errors)
-
-### The solution: Cluster-robust standard errors
-
-Cluster-robust standard errors (also called clustered standard errors or Huber-White sandwich estimators at the cluster level) account for within-cluster correlation by:
-1. Allowing arbitrary correlation among observations within the same cluster
-2. Maintaining the assumption of independence across clusters
-3. Adjusting standard errors upward to reflect this correlation
-
-The result is more conservative (typically larger) standard errors that provide valid inference even when within-cluster correlation exists.
-
 ## Using `robust_se`
 
 ```{r robust_se}
-# Basic regression (ignores clustering)
 model <- lm(test_score ~ treatment + baseline_score, data = experiment_data)
-
-# Get cluster-robust SEs (clustering by school)
 robust_results <- robust_se(model, cluster = experiment_data$school_id)
 
-# robust_results is a list with:
-# [[1]]: variance-covariance matrix
-# [[2]]: coefficient test with robust SEs
-
+# robust_results[[1]] is the variance-covariance matrix
+# robust_results[[2]] is the coefficient test with robust SEs
 robust_results[[2]]
 ```
-
-### Comparing standard vs. cluster-robust SEs
-
-```{r compare_ses}
-# Classical (wrong) SEs
-summary(model)$coefficients
-
-# Cluster-robust (correct) SEs
-robust_results[[2]]
-```
-
-Notice the cluster-robust standard errors are typically **larger** than the classical SEs. This reflects the within-school correlation—students in the same school are more similar to each other than to students in other schools.
-
-For example, if the classical SE for the treatment effect is 0.50 and the cluster-robust SE is 0.75, the **design effect** (the ratio of variances) is (0.75/0.50)² = 2.25. This means the effective sample size is reduced by more than half due to clustering—you'd need 2.25 times as many observations to achieve the same precision if they were clustered versus if they were independent.
-
-**Rule of thumb**: If you have clustered data and don't adjust your standard errors, you're likely overstating your precision and may be reporting false positives.
 
 ## Incorporating clusters into `tidy_lm`
 
-For multiple specifications with clustering, use `tidy_lm` directly:
-
 ```{r tidy_lm_clusters}
-# Run multiple specifications with clustering
 clustered_models <- tidy_lm(
   data = experiment_data,
   dv = c("test_score", "attendance"),
@@ -330,17 +148,15 @@ clustered_models <- tidy_lm(
   style = "incremental"
 )
 
-# Extract treatment effects (now with cluster-robust SEs)
 clustered_models |>
   select(dv, model_number, treatmentTreatment_coef, treatmentTreatment_se, treatmentTreatment_p)
 ```
 
 # Preparing results for publication
 
-Once you've run your analyses, you'll want to create publication-ready tables. The `star_ready()` function prepares `tidy_lm` output for use with the `stargazer` package:
+The `star_ready()` function prepares `tidy_lm` output for `stargazer`:
 
 ```{r star_ready_demo, eval=FALSE}
-# First, run your models
 models <- tidy_lm(
   data = experiment_data,
   dv = "test_score",
@@ -349,31 +165,10 @@ models <- tidy_lm(
   clusters = "school_id"
 )
 
-# Prepare for stargazer
 ready_for_table <- star_ready(models, data = experiment_data)
 
-# Now use with stargazer
 library(stargazer)
 stargazer(ready_for_table, type = "latex")
 ```
 
-For detailed information on formatting tables (adding footnotes, adjusting p-value display, resizing, etc.), see the "Creating publication-ready tables" vignette.
-
-# Key takeaways
-
-**For running regressions:**
-- Use `tidy_lm` when you need to run many specifications
-- Specify `treatment` to extract coefficients you care about
-- Use `clusters` for cluster-robust standard errors
-- Choose `style` based on your needs (bivariate, incremental, default)
-
-**For preparing tables:**
-- `star_ready` bridges `tidy_lm` output to `stargazer`
-- See the "Creating publication-ready tables" vignette for formatting options
-
-**Best practices:**
-- Always cluster standard errors when you have grouped data
-- Run robustness checks with different specifications
-- Document your analytical choices clearly
-
-For more examples, see the function documentation with `?tidy_lm`, `?robust_se`, or `?star_ready`.
+For detailed information on formatting tables, see the "Creating publication-ready tables" vignette.
