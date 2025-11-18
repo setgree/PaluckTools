@@ -403,6 +403,8 @@ Some studies, e.g. [Hall 1969](https://ir-api.ua.edu/api/core/bitstreams/8b53661
 
 `d_calc("unspecified_null")` will always return 0.01 no matter the values of the other parameters.
 
+*n.b.* You can also use the R package `metansue` to address this general problem. (We used the `unspecified_null = 0.01` convention in our meta-analyses where it came up.)
+
 ## Hard cases: non-standard conversions of results into SMDs {#section4}
 
 Each of our meta-analyses has had edge cases that required bespoke solutions. Here we'll walk through two: figuring out ∆ when the meta-analytic outcome is different than the one the paper focuses on; and estimating an SMD from a regression table.
