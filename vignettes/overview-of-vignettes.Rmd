@@ -41,7 +41,7 @@ This vignette provides an overview of the package and guides you to the right vi
 1. Start with [experimental-analysis vignette](experimental-analysis-vignette.html) → Run regressions with cluster-robust SEs
 2. Then [table-formatting vignette](table-formatting-vignette.html) → Create publication tables
 
-## 1 BLPlabtools supports two research workflows
+## BLPlabtools supports two research workflows
 
 BLPlabtools provides functions for two types of analysis:
 
@@ -51,7 +51,7 @@ BLPlabtools provides functions for two types of analysis:
 
 Which workflow you need depends on your research question. Meta-analysis combines results from *other people's studies*. Experimental analysis works with *your own data*.
 
-## 2 Meta-analysis is (more or less) a six step process.
+## Meta-analysis is (more or less) a six step process.
 
 Meta-analysis is a systematic way to combine findings from multiple studies to estimate an overall effect. Here are the main steps:
 

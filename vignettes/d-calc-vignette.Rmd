@@ -13,7 +13,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-## 1 Introduction
+## Introduction
 
 To do meta-analysis, you must first extract two pieces of information from each study in your database: a standardized mean difference (SMD) and its associated variance (or standard error). These numbers allow you to compare results across studies that may have used different outcome measures or scales.
 
@@ -23,7 +23,7 @@ The contact hypothesis meta-analytic dataset is included, with small adjustments
 
 Before we show you how to calculate these numbers, let's talk about what they mean.
 
-### 1.1 Standardized Mean Difference (SMD) and Variance
+### Standardized Mean Difference (SMD) and Variance
 
 $$SMD = \frac{M_1-M_2}{SD}$$
 
@@ -37,7 +37,7 @@ Some studies plainly report $M_1$, $M_2$, and $SD$, which makes calculating an S
 
 In one instance — the difference in proportions estimator — we depart from those equations, which we'll explain in [section 3.2.3](#section323).
 
-### 1.2 d vs ∆
+### d vs ∆
 
 There are two basic ways to standardize your SMD. If you divide $M_1 - M_2$ by the $SD$ of the entire sample, your estimator is called Cohen's $d$. If you use an estimated $SD$ from just the control group, you get [Glass's ∆](https://www.statisticshowto.com/glasss-delta/) (Delta).
 
@@ -45,7 +45,7 @@ The Paluck lab generally prefers Glass's ∆ because we're interested in the eff
 
 When the $SD$ of the control group isn't available but the $SD$ of the entire population is, we use the $SD$ of the entire population. When neither is available, or can't be figured out from a paper's results, we might have a problem. We discuss these issues more in [section 4](#section4).
 
-### 1.3 What your data should look like
+### What your data should look like
 
 Before diving into effect size calculations, it helps to know what columns you'll need in your meta-analytic database. Here's a peek at the `contact_data` structure:
 
@@ -84,9 +84,9 @@ As you read papers and extract data, you'll fill in the "essential" columns. The
 
 The rest of this vignette walks through examples of calculating effect sizes one study at a time. In practice, you'll eventually automate this process for your entire dataset (see [section 5](#section5)).
 
-## 2 `d_calc` and `var_d_calc`
+## `d_calc` and `var_d_calc`
 
-### 2.1 `d_calc`
+### `d_calc`
 
 `d_calc` is a function that takes (up to) five parameters and returns an estimate of either ∆ or d, depending on what you standardize by. The first two parameters are essential, and the next three are only necessary depending on your input for the first parameter.
 
@@ -126,7 +126,7 @@ The five parameters are:
 
 To see all the conversion formulas, run `BLPlabtools::d_calc` (without parentheses).
 
-### 2.2 `var_d_calc`
+### `var_d_calc`
 
 `var_d_calc` takes three inputs:
 
@@ -148,7 +148,7 @@ $\sigma^2 = \sigma^2_1 * g^2$
 
 Standard error ($SE$) is the square root of variance. For meta-analysis, you typically need just one or the other, but the Paluck Lab's meta-analyses typically include both in case a future reader needs them.
 
-## 3 Calculating $\Delta$ and $\sigma^2$ with `d_calc` and `var_d_calc`
+## Calculating $\Delta$ and $\sigma^2$ with `d_calc` and `var_d_calc`
 
 We now load the `BLPlabtools` library, which has the `d_calc` and `var_d_calc` functions. We'll also load the `contact_data` dataset from [The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25) for reference.
 
@@ -158,9 +158,9 @@ library(BLPlabtools)
 data(contact_data)
 ```
 
-### 3.1 The easy cases: difference in means, difference in differences, and, regression coefficients
+### The easy cases: difference in means, difference in differences, and, regression coefficients
 
-#### 3.1.1 Difference in means (d_i_m):
+#### Difference in means (d_i_m):
 
 [DiTullio (1982)](https://www.proquest.com/docview/303259182) is a study of workplace integration programs aimed at reducing prejudice towards people with developmental disabilities. Here is table 4.9 (p. 76):
 
@@ -196,7 +196,7 @@ Two notes about this effect size. First, you'll see a "what" column in `contact_
 
 Second, ∆ = 2.533 is a very large effect size. Δ ∈ [−1,1] is more typical in our experience.
 
-#### 3.1.2 Difference in differences (d_i_d):
+#### Difference in differences (d_i_d):
 
 Some studies present the mean outcomes for each group at both baseline and posttest. [Clunies-Ross & O'Meara (1989)](https://aps.onlinelibrary.wiley.com/doi/abs/10.1080/00050068908259566) tested an "attitude change programme" comprised of "controlled vicarious contact with peers with disabilities, disability simulations, and success oriented group experiences" (p. 271). Here is table 1 (p. 279):
 
@@ -222,7 +222,7 @@ dessel__school_a_se <- sqrt(dessel_school_a_var)
 
 Notice that we record the DiD calculation in the code itself for reproducibility (and also to make it easier to spot mistakes).
 
-#### 3.1.3 Regression coefficient (beta):
+#### Regression coefficient (beta):
 
 In a bivariate regression testing the relationship between treatment status and outcome, the $\beta$ coefficient is equivalent to the difference in means between the groups. Calculating the $SD$ from a regression table takes some guesswork (see [section 4](#section4)), but some studies report both $\beta$ and the $SD$ for the outcome.
 
@@ -269,13 +269,13 @@ Bois_se_other_roommates <- sqrt(Bois_var_other_roomamtes)
 
 By the way, the fact that $\beta$, SD, and the Ns were all reported in separate places in the paper is not at all atypical. You'll often have to read the entire paper carefully to find what you need to calculate ∆. However, even if everything you need is presented in a simple table, at least one author should still read every paper. it's the best way to figure out what a literature is really about.
 
-### 3.2 Converting statistical summaries into SMDs
+### Converting statistical summaries into SMDs
 
 Sometimes, papers report summary statistics that require more complex conversions. [Cooper, Hedges, and Valentine (2009)](https://www.scholars.northwestern.edu/en/publications/the-handbook-of-research-synthesis-and-meta-analysis-2nd-edition) provide formulas for converting t-tests, F-tests, log odds ratios, and odds ratios into SMDs. These conversions all produce estimates of Cohen's $d$ rather than Glass's ∆.
 
 Here we'll show examples for the t-test and F-statistic from [The Contact Hypothesis Re-evaluated](https://doi.org/10.1017/bpp.2018.25). For differences in proportions, Instead of presenting odds ratios and log odds ratios examples, we'll introduce a novel estimator for converting differences in proportions to ∆.
 
-#### 3.2.1 t-test:
+#### t-test:
 
 The standard conversion from a t-test to Cohen's $d$ is $d = t * \sqrt\frac{n_t + n_c}{n_t * n_c}$.
 
@@ -302,7 +302,7 @@ camargo_var <- var_d_calc(d = Camargo_d, n_t = 44, n_c = 214)
 camargo_se <- sqrt(camargo_var)
 ```
 
-#### 3.2.2 F-test:
+#### F-test:
 
 When we are comparing (only) two variances, the F statistic is equivalent to the square of the t-test. As a result, the formula for converting F to ∆ is the same as with t to ∆ except with the F inside the square root:
 
@@ -322,7 +322,7 @@ sayler_var <- var_d_calc(sayler_results, 16, 19)
 sayler_se <- sqrt(sayler_var)
 ```
 
-#### 3.2.3 log odds ratios, odds ratios, and a novel difference in proportions estimator: {#section323}
+#### log odds ratios, odds ratios, and a novel difference in proportions estimator: {#section323}
 
 **Log odds ratios** can be converted to d via $d = log(OR) * \sqrt{\frac{3}{pi}}$. Odds ratios can be logged and then put in the same formula. 
 
@@ -397,13 +397,13 @@ BLPlabtools::d_calc("d_i_p", 0.06 - 0.03, 0.03)
 
 Note that with this estimator, if an event does not occur in the control group, Glass's ∆ will be impossible to calculate because the numerator of the formula equals zero. In such cases, we calculated Cohen's \$d\$ instead by computing variance from the entire sample. (If the event doesn't occur in either group, your effect size is zero.)
 
-### 3.3 Unspecified nulls
+### Unspecified nulls
 
 Some studies, e.g. [Hall 1969](https://ir-api.ua.edu/api/core/bitstreams/8b53661b-99c5-4a2f-9e2d-603bfffb3eb0/content), don't tell you exactly what effect they find, just that it was not not significant. We set all of these cases to ∆ = 0.01 so we can include them in our main analyses. You can set these nulls to 0.00, or 0.001, or anything that substantively communicates "there was no effect", and get basically the same result.
 
 `d_calc("unspecified_null")` will always return 0.01 no matter the values of the other parameters.
 
-## 4 Hard cases: non-standard conversions of results into SMDs {#section4}
+## Hard cases: non-standard conversions of results into SMDs {#section4}
 
 Each of our meta-analyses has had edge cases that required bespoke solutions. Here we'll walk through two: figuring out ∆ when the meta-analytic outcome is different than the one the paper focuses on; and estimating an SMD from a regression table.
 
@@ -411,7 +411,7 @@ In general, we make all available efforts to figure out a "good enough" estimate
 
 [^7]: I.e., a tally of statistically significant positive, statistically significant negative, and null results. A recent paper called vote counting procedures "antiquated" ([Mathur & VanderWeele 2018](https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8057) and we agree that statistical significance is not obviously a good signal of whether a given piece of evidence is meaningful or substantive. However, vote counting can sometimes provide a novel way to look at things, e.g. a higher number of nulls than expected is a "hoop test" ([Collier 2011](https://polisci.berkeley.edu/sites/default/files/people/u3827/Understanding%20Process%20Tracing.pdf)) against publication bias.
 
-### 4.1 When *your* estimand isn't the paper's
+### When *your* estimand isn't the paper's
 
 [Brookman and Kalla (2016)](science.org/doi/10.1126/science.aad9713) is a landmark study of how a brief conversation with canvassers on trans issues can durably alter transphobic attitudes. Figure 1 displays the main results:
 
@@ -435,7 +435,7 @@ If whether a subject talked to a trans or cis canvasser was randomly assigned, t
 
     -   This paper's careful design allowed us to disentangle the effects of intergroup contact vs. the other elements of treatment. Other papers in our dataset did not allow for these kinds of fine-grained measurements, so they might be overestimates of the effects of contact if the non-contact elements of treatment also meaningfully affected the outcomes.
 
-### 4.2 Calculating standardized mean difference from regression output
+### Calculating standardized mean difference from regression output
 
 Some studies, particularly by economists, present results from a regression output. It can take some work to translate these results to ∆.
 
@@ -453,7 +453,7 @@ Fourth, if you can't find what you need in the paper and the authors can't help,
 
 No matter what you choose for a case like this, we recommend you document your choices carefully for inclusion in your supplementary materials.
 
-## 5 Incorporating `d_calc` and `var_d_calc` into your analysis scripts
+## Incorporating `d_calc` and `var_d_calc` into your analysis scripts
 
 When we wrote TCHR, we had one function that combined the results of `d_calc` and `var_d_calc` into a table and a script that recorded the those calculations for every study. We then copied and pasted that script's results into our final dataset.
 
@@ -482,10 +482,10 @@ This script uses variables in the dataset as inputs and returns a dataset with `
 
 This approach will ultimately save you a fair bit of time, reduce a possible source of user error by eliminating the copy and paste step, and make a larger portion of your workflow computationally reproducible. To facilitate this step, it pays to have columns in your dataset corresponding to `stat_type`, `stat`, `sample_sd`, `n_t`, and `n_c`.
 
-## 6. Further reading
+## Further reading
 
 See [this page on SMDs](https://handbook-5-1.cochrane.org/chapter_9/9_2_3_2_the_standardized_mean_difference.htm) from the Cochrane collaboration and the `escalc` [documentation](https://wviechtb.github.io/metafor/reference/escalc.html) from the `metafor` package for more information and discussion.
 
-## 7 Next up
+## Next up
 
 [Performing meta-analysis the Paluck Lab way](meta-analysis-vignette.html).
