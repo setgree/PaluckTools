@@ -6,7 +6,7 @@ output:
     toc: true
     toc_depth: 3
 vignette: >
-  %\VignetteIndexEntry{Performing meta-analysis the Paluck Lab way}
+  %\VignetteIndexEntry{2. Performing meta-analysis the Paluck Lab way}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
