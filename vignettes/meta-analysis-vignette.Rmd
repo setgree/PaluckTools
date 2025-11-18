@@ -49,7 +49,7 @@ Before running meta-analyses, your dataset should have these essential columns:
 
 ```{r preview_sv_data, echo=FALSE}
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(knitr)
 
 # Show structure of meta-analysis data
@@ -118,7 +118,7 @@ Clustering accounts for the fact that multiple effect sizes from the same study 
 Our meta-analyses cluster at the level of study. You could also cluster at the level of a paper, or of a team of authors, or at no level at all. If you run our function on a dataset where each unique_study_id corresponds to only one row in the dataset, it's equivalent to not clustering. We'll demonstrate that with `BLPlabtools::contact_data`:
 
 ```{r contact_data_demonstration}
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 contact_data |> select(-unique_study_id) |> # remove unique study id to reconstruct it
   group_by(name_short) |> mutate(unique_study_id = cur_group_id()) |>
   map_robust()
@@ -144,7 +144,7 @@ In "Preventing Sexual Violence," we wanted to compare effects on **ideas** (atti
 
 ```{r split_by_behavioral_ideas_outcomes}
 library(purrr)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 sv_data |> split(~behavior_type) |> map(map_robust) |> bind_rows(.id = "behavior_type")
 ```
 

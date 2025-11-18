@@ -51,7 +51,7 @@ Before diving into effect size calculations, it helps to know what columns you'l
 
 ```{r preview_contact_data}
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 data(contact_data)
 
 # View essential columns for effect size calculation

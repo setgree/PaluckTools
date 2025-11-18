@@ -57,7 +57,7 @@ For realistic examples, we'll create a simulated dataset from a typical social p
 
 ```{r simulate_data}
 library(BLPlabtools)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 
 set.seed(123)  # For reproducibility
 
