@@ -8,7 +8,7 @@ output:
     fig_width: 7
     fig_height: 7
 vignette: >
-  %\VignetteIndexEntry{Creating publication-ready tables}
+  %\VignetteIndexEntry{5. Creating publication-ready tables}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:

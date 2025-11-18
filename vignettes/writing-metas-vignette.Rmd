@@ -8,7 +8,7 @@ output:
     fig_width: 7
     fig_height: 7
 vignette: >
-  %\VignetteIndexEntry{Writing your meta-analytic paper}
+  %\VignetteIndexEntry{3. Writing your meta-analytic paper}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:

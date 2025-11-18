@@ -6,7 +6,7 @@ output:
     toc: true
     toc_depth: 4
 vignette: >
-  %\VignetteIndexEntry{Converting a study's results into SMD, variance, and standard error}
+  %\VignetteIndexEntry{1. Converting a study's results into SMD, variance, and standard error}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
