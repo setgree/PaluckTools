@@ -56,7 +56,7 @@ data(contact_data)
 
 # View essential columns for effect size calculation
 contact_data |>
-  select(Study, statistic, unstand, sd_c, n_t, n_c, d, var_d, se_d) |>
+  select(study, statistic, unstand, sd_c, n_t, n_c, d, var_d, se_d) |>
   head(3)
 ```
 
